@@ -10,3 +10,4 @@ if not TODOIST_API_TOKEN:
     raise ValueError("Missing TODOIST_API_TOKEN in .env")
 
 NONSCHEDULED_TASKS_LABEL = "Agendar"
+DEFAULT_TABLEFORMAT = "rounded_outline"
