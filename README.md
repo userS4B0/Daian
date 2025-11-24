@@ -57,7 +57,7 @@ This project is intentionally built for **expansion**, including future integrat
 
 ## 🗺️ Roadmap (Initial Phase)
 
-### **Phase 1 — Core MVP (Week 1–2)**
+### **Phase 1 — Core MVP**
 - [ ] Implement Todoist API client  
 - [ ] Implement Google Calendar API integration  
 - [ ] Define rule-based task duration engine  
@@ -66,7 +66,7 @@ This project is intentionally built for **expansion**, including future integrat
 - [ ] Create CLI entrypoint  
 - [ ] Add environment variable loader  
 
-### **Phase 2 — Automation Layer (Week 3–4)**
+### **Phase 2 — Automation Layer**
 - [ ] Add cron/Docker execution support  
 - [ ] Improve logging and error handling  
 - [ ] Create "dry-run" preview mode  
