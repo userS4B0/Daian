@@ -58,7 +58,7 @@ This project is intentionally built for **expansion**, including future integrat
 ## 🗺️ Roadmap (Initial Phase)
 
 ### **Phase 1 — Core MVP**
-- [ ] Implement Todoist API client  
+- [X] Implement Todoist API client  
 - [ ] Implement Google Calendar API integration  
 - [ ] Define rule-based task duration engine  
 - [ ] Build availability scanner  
