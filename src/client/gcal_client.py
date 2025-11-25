@@ -18,16 +18,8 @@ from config.user_settings import GCAL_ID_PERSONALEVENTS, TZ
 # Necessaroy scope for complete read/write operations in Google Calendar
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
-
-# TODO: Event Creation
-# Descr.: Implement proper functionality for event creation
-# TODO: Event Deletion
-# Descr.: Implement proper functionality for event deletion
 # TODO: Event Movement
 # Descr.: Implement proper functionality for event movement & rescheduling
-# TODO: Event listing in table format
-# Descr.: Implement functionality to display all events from desired calendar(s) in time schedule or table format
-
 
 class GCalClient:
     """
