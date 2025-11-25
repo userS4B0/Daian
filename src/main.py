@@ -20,9 +20,11 @@ def main():
 
     gcal_client = GCalClient()
 
-    print("\n[INFO] Scheduled events:")
-    events = gcal_client.list_events(5, GCAL_ID_WORK)
-    gcal_client.show_event_table(events)
+    calendars = [GCAL_ID_MYTASKS, GCAL_ID_PERSONALEVENTS, GCAL_ID_TIMEMANAGE]
+
+    print("\n[INFO] Showing last 20 events from all calendars:")
+    all_events = gcal_client.list_events_all(calendars, 50)
+    gcal_client.show_event_table(all_events)
 
 if __name__ == "__main__":
     try:
