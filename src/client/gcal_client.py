@@ -21,6 +21,7 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 # TODO: Event Movement
 # Descr.: Implement proper functionality for event movement & rescheduling
 
+
 class GCalClient:
     """
     Simple Wrapper to work with google calendar
@@ -82,7 +83,7 @@ class GCalClient:
     # ----------------------------------------------------------------------
     # Event listing
     # ----------------------------------------------------------------------
-    def list_events(self, max_results: int = 10, calendar_id=GCAL_ID_PERSONALEVENTS):
+    def list_events(self, calendar_ids: list[str], max_results: int = 10) -> list[dict]:
         """
         Returns a list of calendar events from the desired calendar
 
@@ -93,18 +94,40 @@ class GCalClient:
         Returns:
             list: Event list (dict) retrieved from API.
         """
-        events_result = (
-            self.service.events()
-            .list(
-                calendarId=calendar_id,  # Calendar ID configured on config/settings.py
-                maxResults=max_results,
-                singleEvents=True,
-                orderBy="startTime",
-            )
-            .execute()
+        events = []
+
+        for calendar_id in calendar_ids:
+            try:
+                events_result = (
+                    self.service.events()
+                    .list(
+                        calendarId=calendar_id,
+                        maxResults=max_results,
+                        singleEvents=True,
+                        orderBy="startTime",
+                    )
+                    .execute()
+                )
+                events = events_result.get("items", [])
+
+                # Adds Calendar ID to every event for references
+                for e in events:
+                    e["_calendar_id"] = calendar_id
+                events.extend(events)
+
+            except Exception as e:
+                # Raise a new exception with context
+                raise RuntimeError(
+                    f"Error fetching events from calendar {calendar_id}"
+                ) from e
+
+        # Sort all events by start date/time
+        events.sort(
+            key=lambda e: e.get("start", {}).get("dateTime")
+            or e.get("start", {}).get("date")
         )
 
-        return events_result.get("items", [])
+        return events
 
     # ----------------------------------------------------------------------
     # Event creation
