@@ -7,9 +7,8 @@ from config.user_settings import (
     GCAL_ID_MYTASKS,
     GCAL_ID_PERSONALEVENTS,
     GCAL_ID_TIMEMANAGE,
-    GCAL_ID_WORK
+    GCAL_ID_WORK,
 )
-
 
 def main():
     todoist_client = TodoistClient()
@@ -20,11 +19,12 @@ def main():
 
     gcal_client = GCalClient()
 
-    calendars = [GCAL_ID_MYTASKS, GCAL_ID_PERSONALEVENTS, GCAL_ID_TIMEMANAGE]
+    calendars = [GCAL_ID_MYTASKS, GCAL_ID_PERSONALEVENTS, GCAL_ID_TIMEMANAGE, GCAL_ID_WORK]
 
-    print("\n[INFO] Showing last 20 events from all calendars:")
-    all_events = gcal_client.list_events_all(calendars, 50)
-    gcal_client.show_event_table(all_events)
+
+    print("\n[INFO] Showing this week's events from all calendars:")
+    events = gcal_client.get_thisweek_events(calendars)
+    gcal_client.show_event_table(events)
 
 if __name__ == "__main__":
     try:

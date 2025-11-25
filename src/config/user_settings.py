@@ -20,5 +20,5 @@ NONSCHEDULED_TASKS_LABEL = "Agendar"
 # ----------------------------------------------------------------------
 # Default user timezone (defined on .env)
 # ----------------------------------------------------------------------
-TZ = os.getenv("TZ")
+DEF_TZ = os.getenv("DEF_TZ")
 FALLBACK_TZ = "UTC"

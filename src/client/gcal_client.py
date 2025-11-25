@@ -13,7 +13,9 @@ from config.app_settings import (
     GOOGLE_TOKEN_PATH,
     DEFAULT_TABLEFORMAT,
 )
-from config.user_settings import GCAL_ID_PERSONALEVENTS, TZ
+from config.user_settings import GCAL_ID_PERSONALEVENTS, DEF_TZ
+
+from utils.time_utils import get_current_week
 
 # Necessaroy scope for complete read/write operations in Google Calendar
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
@@ -58,8 +60,8 @@ class GCalClient:
             - If it's not valid, it loads an OAuth2 flow on web browser.
             - Saves received token in specific path defined in .env
             - Builds the Google Calendar API client.
-        Maneja el ciclo completo de autenticación OAuth2:
         """
+
         # Load existing token if it's present
         if self.token_path.exists():
             self.creds = Credentials.from_authorized_user_file(
@@ -81,18 +83,20 @@ class GCalClient:
         self.service = build("calendar", "v3", credentials=self.creds)
 
     # ----------------------------------------------------------------------
-    # Event listing
+    # List specific number of events
     # ----------------------------------------------------------------------
-    def list_events(self, calendar_ids: list[str], max_results: int = 10) -> list[dict]:
+    def get_numberof_events(
+        self, calendar_ids: list[str], max_results: int = 10
+    ) -> list[dict]:
         """
-        Returns a list of calendar events from the desired calendar
+        Returns a list of a desired number (defaults 10 events) of events from different calendars.
 
         Args:
             max_results (int): Max number of events to retrieve.
-            calendar_id (str): ID of Google Calendar to work with.
+            calendar_ids (list[str]): List of calendar IDs to fetch events from.
 
         Returns:
-            list: Event list (dict) retrieved from API.
+            list[dict]: Event list (dict) retrieved from API.
         """
         events = []
 
@@ -130,6 +134,62 @@ class GCalClient:
         return events
 
     # ----------------------------------------------------------------------
+    # List this week's events
+    # ----------------------------------------------------------------------
+    def get_thisweek_events(self, calendar_ids: list[str]) -> list[dict]:
+        """
+        Retrieve all events from the current week across multiple calendars.
+
+        Args:
+            calendar_ids (list[str]): List of calendar IDs to fetch events from.
+
+        Returns:
+            list[dict]: Combined list of all events from the current week.
+        """
+        all_events = []
+
+        # Get ISO 8601 start and end of current week
+        time_min, time_max = get_current_week()
+
+        for calendar_id in calendar_ids:
+            try:
+                # Fetch events for the calendar within the week range
+                events_result = (
+                    self.service.events()
+                    .list(
+                        calendarId=calendar_id,
+                        timeMin=time_min,
+                        timeMax=time_max,
+                        singleEvents=True,
+                        orderBy="startTime",
+                    )
+                    .execute()
+                )
+
+                events = events_result.get("items", [])
+
+                # Tag each event with its calendar ID for reference
+                for e in events:
+                    e["_calendar_id"] = calendar_id
+
+                # Add events to the combined list
+                all_events.extend(events)
+
+            except Exception as e:
+                # Raise a new exception with context for the failing calendar
+                raise RuntimeError(
+                    f"Error fetching events from calendar {calendar_id}"
+                ) from e
+
+            # Sort all events by start time
+        all_events.sort(
+            key=lambda e: e.get("start", {}).get("dateTime")
+            or e.get("start", {}).get("date")
+        )
+
+        return all_events
+
+    # ----------------------------------------------------------------------
     # Event creation
     # ----------------------------------------------------------------------
     def create_event(
@@ -158,11 +218,11 @@ class GCalClient:
             "description": description,
             "start": {
                 "dateTime": start_dt.isoformat(),
-                "timeZone": TZ,
+                "timeZone": DEF_TZ,
             },
             "end": {
                 "dateTime": end_dt.isoformat(),
-                "timeZone": TZ,
+                "timeZone": DEF_TZ,
             },
         }
 
