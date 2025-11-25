@@ -5,14 +5,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ----------------------------------------------------------------------
-# Todoist API Token
+# Google calendar IDs (defined on .env)
 # ----------------------------------------------------------------------
-TODOIST_API_TOKEN = os.getenv("TODOIST_API_TOKEN")
-if not TODOIST_API_TOKEN:
-    raise ValueError(
-        "Missing TODOIST_API_TOKEN in .env. "
-        "Please create a .env file with your token."
-    )
+GCAL_ID_MYTASKS=os.getenv("GCAL_ID_MYTASKS")
+GCAL_ID_WORK=os.getenv("GCAL_ID_WORK")
+GCAL_ID_TIMEMANAGE=os.getenv("GCAL_ID_TIMEMANAGE")
+GCAL_ID_PERSONALEVENTS=os.getenv("GCAL_ID_PERSONALEVENTS")
 
 # ----------------------------------------------------------------------
 # Default label for non-scheduled tasks
@@ -20,6 +18,7 @@ if not TODOIST_API_TOKEN:
 NONSCHEDULED_TASKS_LABEL = "Agendar"
 
 # ----------------------------------------------------------------------
-# Default table format for CLI output using tabulate
+# Default user timezone (defined on .env)
 # ----------------------------------------------------------------------
-DEFAULT_TABLEFORMAT = "rounded_outline"
+TZ = os.getenv("TZ")
+FALLBACK_TZ = "UTC"

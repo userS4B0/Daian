@@ -120,6 +120,72 @@ WORKING_HOURS_START=09:00
 WORKING_HOURS_END=18:00
 ```
 
+### 5. Google Calendar API Setup
+
+To enable the Google Calendar integration, you must create and configure an OAuth2 credential file used by the application to authenticate against the Google API.
+
+This file is mandatory and must follow Google's official structure.
+
+#### 5.1. Enable Google Calendar API
+
+1. Go to the Google Cloud Console: https://console.cloud.google.com/apis/credentials
+2. Create a new project (or reuse an existing one).
+3. In the left menu, navigate to: *APIs & Services → Library*
+4. Search for Google **Calendar API** and click **Enable**.
+
+#### 5.2. Create OAuth Client Credentials
+
+1. In the left menu, open: *APIs & Services → Credentials*
+2. Click *Create Credentials → OAuth client ID*
+3. Select:
+   - Application type: Desktop app
+   - Name: e.g., Desktop OAuth Client
+
+4. Click Create.
+5. Download the JSON file and rename it to: `google_credentials.json`
+
+#### 5.3. Required JSON Structure
+
+The JSON must follow this schema (Google provides this automatically):
+
+```json
+{
+  "installed": {
+    "client_id": "XXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com",
+    "project_id": "my-google-project-id",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "client_secret": "XXXXXXXXXXXXXXX",
+    "redirect_uris": [
+      "http://localhost"
+    ]
+  }
+}
+```
+
+⚠️ Do not modify this structure.
+It is required by the OAuth2 flow used by the application.
+
+Place this file wherever you need on the project structure and reference it in `.env` as follows:
+
+```ini
+GOOGLE_CREDENTIALS_PATH=credentials/google_credentials.json
+GOOGLE_TOKEN_PATH=google_token.json
+```
+
+- **GOOGLE_CREDENTIALS_PATH** → path to the OAuth client file you downloaded
+- **GOOGLE_TOKEN_PATH** → path where the API will store your generated OAuth access token after the first login
+
+#### 5.4. First-time authentication
+
+When you run the application for the first time:
+
+1. A browser window will open asking you to log in with your Google account.
+2. Approve the permissions for accessing your calendar.
+3. A token file will be created automatically in the location defined by GOOGLE_TOKEN_PATH.
+
+After this initial process, the app can refresh the token automatically.
+
 ---
 
 ## 🚀 Usage
@@ -130,6 +196,7 @@ python src/main.py
 ```
 
 Preview mode (No changes written to calendar)
+
 ```bash
 python src/main.py --dry-run
 ```
