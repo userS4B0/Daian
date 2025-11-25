@@ -6,6 +6,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from config.settings import GOOGLE_CREDENTIALS_PATH, GOOGLE_TOKEN_PATH
+from config.settings import GCAL_ID_MYTASKS, GCAL_ID_PERSONALEVENTS, GCAL_ID_TIMEMANAGE, GCAL_ID_WORK
+
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -55,7 +57,7 @@ class GCalClient:
         events_result = (
             self.service.events()
             .list(
-                calendarId="primary",
+                calendarId=GCAL_ID_TIMEMANAGE,
                 maxResults=max_results,
                 singleEvents=True,
                 orderBy="startTime",
