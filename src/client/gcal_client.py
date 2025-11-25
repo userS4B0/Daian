@@ -20,7 +20,7 @@ class GCalClient:
 
     def __init__(self):
         self.creds_path = pathlib.Path(GOOGLE_CREDENTIALS_PATH)
-        self.token_path = pathlib.Path(GOOGLE_TOKEN_PATH, "google_token.json")
+        self.token_path = pathlib.Path(GOOGLE_TOKEN_PATH)
 
         self.creds = None
         self.service = None
@@ -42,7 +42,7 @@ class GCalClient:
             )
             self.creds = flow.run_local_server(port=0)
 
-            # Guardar token renovado en la ruta deseada
+            # Save renewed token on desired path
             with open(self.token_path, "w") as token:
                 token.write(self.creds.to_json())
 
