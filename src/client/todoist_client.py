@@ -1,5 +1,5 @@
 from todoist_api_python.api import TodoistAPI
-from config.settings import TODOIST_API_TOKEN, DEFAULT_TABLEFORMAT
+from config.app_settings import TODOIST_API_TOKEN, DEFAULT_TABLEFORMAT
 from tabulate import tabulate
 from utils.time_utils import normalize_datetime
 

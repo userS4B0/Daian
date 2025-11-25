@@ -1,6 +1,8 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from config.user_settings import TZ, FALLBACK_TZ
+
 
 def normalize_datetime(dt_str):
     """Convert an ISO 8601 datetime string to a UTC datetime object.
@@ -25,11 +27,11 @@ def normalize_datetime(dt_str):
         return None
 
     try:
-        return dt.astimezone(ZoneInfo("UTC"))
+        return dt.astimezone(ZoneInfo(TZ))
     except Exception:
         # Fallback for environments without full zoneinfo support
         try:
-            return dt.astimezone(ZoneInfo("Etc/UTC"))
+            return dt.astimezone(ZoneInfo(FALLBACK_TZ))
         except Exception:
             # If all fails, return naive datetime
             return dt
