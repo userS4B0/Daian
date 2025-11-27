@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 
 from config.user_settings import DEF_TZ, FALLBACK_TZ
 
+
 # ----------------------------------------------------------------------
 # Format Date Time
 # ----------------------------------------------------------------------
@@ -31,12 +32,15 @@ def normalize_datetime(dt_str):
     try:
         return dt.astimezone(ZoneInfo(DEF_TZ))
     except Exception:
+        raise RuntimeError ("[WARN] DEF_TZ variable not found, falling back to FALLBACK_TZ")
         # Fallback for environments without full zoneinfo support
         try:
             return dt.astimezone(ZoneInfo(FALLBACK_TZ))
         except Exception:
+            raise RuntimeError ("[WARN] FALLBACK_TZ variable not found, falling back to native datetime")
             # If all fails, return naive datetime
             return dt
+
 
 # ----------------------------------------------------------------------
 # Get Current week

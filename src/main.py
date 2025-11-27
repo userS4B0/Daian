@@ -1,3 +1,5 @@
+import sys
+
 from client.todoist_client import TodoistClient
 from config.user_settings import NONSCHEDULED_TASKS_LABEL
 
@@ -19,15 +21,33 @@ def main():
 
     gcal_client = GCalClient()
 
-    calendars = [GCAL_ID_MYTASKS, GCAL_ID_PERSONALEVENTS, GCAL_ID_TIMEMANAGE, GCAL_ID_WORK]
-
+    calendars = [
+        GCAL_ID_MYTASKS,
+        GCAL_ID_PERSONALEVENTS,
+        GCAL_ID_TIMEMANAGE,
+        GCAL_ID_WORK,
+    ]
 
     print("\n[INFO] Showing this week's events from all calendars:")
     events = gcal_client.get_thisweek_events(calendars)
     gcal_client.show_event_table(events)
+
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
         print("\n[INFO] Program interrupted by user. Exiting cleanly...\n")
+        sys.exit(0)
+
+    except ValueError as e:
+        print(f"[VALUE] {e}")
+        sys.exit(0)
+
+    except RuntimeError as e:
+        print(f"[RUNTIME] {e}")
+        sys.exit(0)
+    
+    except Exception as e:
+        print(f"[UNDEFINED] {e}")
+        sys.exit(0)

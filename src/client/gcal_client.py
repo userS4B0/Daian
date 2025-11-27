@@ -122,7 +122,7 @@ class GCalClient:
             except Exception as e:
                 # Raise a new exception with context
                 raise RuntimeError(
-                    f"Error fetching events from calendar {calendar_id}"
+                    f"[ERROR] Error fetching events from calendar {calendar_id}"
                 ) from e
 
         # Sort all events by start date/time
@@ -178,7 +178,7 @@ class GCalClient:
             except Exception as e:
                 # Raise a new exception with context for the failing calendar
                 raise RuntimeError(
-                    f"Error fetching events from calendar {calendar_id}"
+                    f"[ERROR] Error fetching events from calendar {calendar_id}"
                 ) from e
 
             # Sort all events by start time
