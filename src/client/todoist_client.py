@@ -11,6 +11,8 @@ class TodoistClient(TodoistAPI):
     displaying tasks in a CLI table format.
     """
 
+    # TODO: Handle connection failed errors
+    # Descr.: Handle program errors when connection to todoist API fails
     def __init__(self):
         """Initialize the TodoistClient with the API token."""
         super().__init__(TODOIST_API_TOKEN)
