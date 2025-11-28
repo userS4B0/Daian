@@ -6,7 +6,7 @@ from config.user_settings import NONSCHEDULED_TASKS_LABEL
 from client.gcal_client import GCalClient
 
 from config.user_settings import (
-    GCAL_ID_MYTASKS,
+    GCAL_ID_TASKS,
     GCAL_ID_PERSONALEVENTS,
     GCAL_ID_TIMEMANAGE,
     GCAL_ID_WORK,
@@ -22,7 +22,7 @@ def main():
     gcal_client = GCalClient()
 
     calendars = [
-        GCAL_ID_MYTASKS,
+        GCAL_ID_TASKS,
         GCAL_ID_PERSONALEVENTS,
         GCAL_ID_TIMEMANAGE,
         GCAL_ID_WORK,

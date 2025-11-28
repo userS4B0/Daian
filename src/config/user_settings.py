@@ -7,7 +7,7 @@ load_dotenv()
 # ----------------------------------------------------------------------
 # Google calendar IDs (defined on .env)
 # ----------------------------------------------------------------------
-GCAL_ID_MYTASKS=os.getenv("GCAL_ID_MYTASKS")
+GCAL_ID_TASKS=os.getenv("GCAL_ID_TASKS")
 GCAL_ID_WORK=os.getenv("GCAL_ID_WORK")
 GCAL_ID_TIMEMANAGE=os.getenv("GCAL_ID_TIMEMANAGE")
 GCAL_ID_PERSONALEVENTS=os.getenv("GCAL_ID_PERSONALEVENTS")
