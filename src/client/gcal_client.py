@@ -17,6 +17,10 @@ from config.user_settings import GCAL_ID_PERSONALEVENTS, DEF_TZ
 
 from utils.time_utils import get_current_week
 
+from config.log.logger import setup_logger
+
+logger = setup_logger(__name__)
+
 # Necessaroy scope for complete read/write operations in Google Calendar
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -63,12 +67,14 @@ class GCalClient:
         """
 
         # Load existing token if it's present
+        logger.debug("Attempting to fetch google token file")
         if self.token_path.exists():
             self.creds = Credentials.from_authorized_user_file(
                 str(self.token_path), SCOPES
             )
 
         # If token isn't present, executes full authentication flow
+        logger.debug("Google Token not found, executing full authentication flow")
         if not self.creds or not self.creds.valid:
             flow = InstalledAppFlow.from_client_secrets_file(
                 str(self.creds_path), SCOPES
@@ -76,10 +82,12 @@ class GCalClient:
             self.creds = flow.run_local_server(port=0)
 
             # Save new token
+            logger.debug("Google Token generated & saved")
             with open(self.token_path, "w") as token:
                 token.write(self.creds.to_json())
 
         # Build Google Calendar API Client
+        logger.debug("Building Google Calendar API")
         self.service = build("calendar", "v3", credentials=self.creds)
 
     # ----------------------------------------------------------------------
@@ -102,6 +110,7 @@ class GCalClient:
 
         for calendar_id in calendar_ids:
             try:
+                logger.debug("Processing calendar events")
                 events_result = (
                     self.service.events()
                     .list(
@@ -120,10 +129,7 @@ class GCalClient:
                 events.extend(events)
 
             except Exception as e:
-                # Raise a new exception with context
-                raise RuntimeError(
-                    f"[ERROR] Error fetching events from calendar {calendar_id}"
-                ) from e
+                logger.error(f"Failed to process calendar: {e}")
 
         # Sort all events by start date/time
         events.sort(
@@ -146,13 +152,15 @@ class GCalClient:
         Returns:
             list[dict]: Combined list of all events from the current week.
         """
-        all_events = []
+        events = []
 
         # Get ISO 8601 start and end of current week
         time_min, time_max = get_current_week()
 
         for calendar_id in calendar_ids:
             try:
+                logger.debug("Processing calendar events")
+
                 # Fetch events for the calendar within the week range
                 events_result = (
                     self.service.events()
@@ -173,21 +181,18 @@ class GCalClient:
                     e["_calendar_id"] = calendar_id
 
                 # Add events to the combined list
-                all_events.extend(events)
+                events.extend(events)
 
             except Exception as e:
-                # Raise a new exception with context for the failing calendar
-                raise RuntimeError(
-                    f"[ERROR] Error fetching events from calendar {calendar_id}"
-                ) from e
+                logger.error(f"Failed to process calendar: {e}")
 
             # Sort all events by start time
-        all_events.sort(
+        events.sort(
             key=lambda e: e.get("start", {}).get("dateTime")
             or e.get("start", {}).get("date")
         )
 
-        return all_events
+        return events
 
     # ----------------------------------------------------------------------
     # Event creation
@@ -229,7 +234,7 @@ class GCalClient:
         created = (
             self.service.events().insert(calendarId=calendar_id, body=event).execute()
         )
-
+        logger.info("New event has been created")
         return created
 
     # ----------------------------------------------------------------------
@@ -250,13 +255,17 @@ class GCalClient:
             - Start time: Event start date/time
             - End time: Event end date/time
         """
+        logger.info("Preparing events table for display")
+
         if not events:
-            print("[INFO] No events found.")
+            logger.warning("No events found!")
             return
 
         # Build table rows
         table = []
         for event in events:
+            logger.debug("Processing event entry")
+
             title = event.get("summary", "No Title")
             start = event.get("start", {}).get("dateTime") or event.get(
                 "start", {}
@@ -267,20 +276,26 @@ class GCalClient:
 
             # Format datetime
             try:
+                logger.debug("Formatting date/time")
                 if start and "T" in start:
                     start = datetime.fromisoformat(start).strftime("%Y-%m-%d %H:%M")
                 if end and "T" in end:
                     end = datetime.fromisoformat(end).strftime("%Y-%m-%d %H:%M")
-            except Exception:
+            except Exception as e:
+                logger.debug(f"Error formatting date: {e}")
                 pass
 
             table.append([title, start, end])
 
         # Print table with headers
-        print(
-            tabulate(
-                table,
-                headers=["Title", "Start time", "End time"],
-                tablefmt=DEFAULT_TABLEFORMAT,
+        try:
+            logger.debug("Rendering event table for console output")
+            print(
+                tabulate(
+                    table,
+                    headers=["Title", "Start time", "End time"],
+                    tablefmt=DEFAULT_TABLEFORMAT,
+                )
             )
-        )
+        except Exception as e:
+            logger.error(f"Error while printing table: {e}")

@@ -3,6 +3,10 @@ from zoneinfo import ZoneInfo
 
 from config.user_settings import DEF_TZ, FALLBACK_TZ
 
+from config.log.logger import setup_logger
+
+logger = setup_logger(__name__)
+
 
 # ----------------------------------------------------------------------
 # Format Date Time
@@ -19,7 +23,9 @@ def normalize_datetime(dt_str):
     Returns:
         datetime or None: Datetime object in UTC timezone, or None if input is invalid.
     """
+    logger.debug("Formating datetime")
     if not dt_str:
+        logger.debug("No datetime string found")
         return None
 
     try:
@@ -27,18 +33,24 @@ def normalize_datetime(dt_str):
         dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
     except ValueError:
         # Invalid format
+        logger.debug("Invalid datetime format")
         return None
 
     try:
         return dt.astimezone(ZoneInfo(DEF_TZ))
     except Exception:
-        raise RuntimeError ("[WARN] DEF_TZ variable not found, falling back to FALLBACK_TZ")
+        logger.warning("DEF_TZ variable not found on .env, falling back to FALLBACK_TZ")
+
         # Fallback for environments without full zoneinfo support
         try:
             return dt.astimezone(ZoneInfo(FALLBACK_TZ))
         except Exception:
-            raise RuntimeError ("[WARN] FALLBACK_TZ variable not found, falling back to native datetime")
+            logger.warning(
+                "FALLBACK_TZ variable not found on .env, falling back to native datetime"
+            )
+
             # If all fails, return naive datetime
+            logger.debug("All attempts to format datetime failed, returning to dt")
             return dt
 
 
