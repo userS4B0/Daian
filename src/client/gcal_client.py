@@ -155,7 +155,7 @@ class GCalClient:
         events = []
 
         # Get ISO 8601 start and end of current week
-        time_min, time_max = get_current_week()
+        week_start_str, week_end_str = get_current_week()
 
         for calendar_id in calendar_ids:
             try:
@@ -166,8 +166,8 @@ class GCalClient:
                     self.service.events()
                     .list(
                         calendarId=calendar_id,
-                        timeMin=time_min,
-                        timeMax=time_max,
+                        timeMin=week_start_str,
+                        timeMax=week_end_str,
                         singleEvents=True,
                         orderBy="startTime",
                     )
