@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+
 from datetime import datetime
 from tabulate import tabulate
 
@@ -8,14 +9,13 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from utils.time_utils import get_current_week
+
 from config.app_settings import (
     GOOGLE_CREDENTIALS_PATH,
     GOOGLE_TOKEN_PATH,
     DEFAULT_TABLEFORMAT,
 )
-from config.user_settings import GCAL_ID_PERSONALEVENTS, DEF_TZ
-
-from utils.time_utils import get_current_week
 
 from config.log.logger import setup_logger
 
@@ -54,9 +54,7 @@ class GCalClient:
 
         self._authenticate()
 
-    # ----------------------------------------------------------------------
-    # OAuth2 Authentication
-    # ----------------------------------------------------------------------
+    # ----- OAuth2 Authentication ------------------------------------------
     def _authenticate(self):
         """
         Handles OAuth2 authentication cycle:
@@ -90,9 +88,7 @@ class GCalClient:
         logger.debug("Building Google Calendar API")
         self.service = build("calendar", "v3", credentials=self.creds)
 
-    # ----------------------------------------------------------------------
-    # List specific number of events
-    # ----------------------------------------------------------------------
+    # ----- List specific number of events ---------------------------------
     def get_numberof_events(
         self, calendar_ids: list[str], max_results: int = 10
     ) -> list[dict]:
@@ -139,9 +135,7 @@ class GCalClient:
 
         return events
 
-    # ----------------------------------------------------------------------
-    # List this week's events
-    # ----------------------------------------------------------------------
+    # ----- List this week's events ---------------------------------------- 
     def get_thisweek_events(self, calendar_ids: list[str]) -> list[dict]:
         """
         Retrieve all events from the current week across multiple calendars.
@@ -194,52 +188,7 @@ class GCalClient:
 
         return events
 
-    # ----------------------------------------------------------------------
-    # Event creation
-    # ----------------------------------------------------------------------
-    def create_event(
-        self,
-        summary: str,
-        start_dt: datetime,
-        end_dt: datetime,
-        description: str = "",
-        calendar_id=GCAL_ID_PERSONALEVENTS,
-    ):
-        """
-        Creates new event on desired calendar.
-
-        Args:
-            summary (str): Event title.
-            start_dt (datetime): Event initial Date/Time.
-            end_dt (datetime): Event final Date/Time.
-            description (str): Event description.
-            calendar_id (str): ID of Google Calendar to work
-
-        Returns:
-            dict: Created event.
-        """
-        event = {
-            "summary": summary,
-            "description": description,
-            "start": {
-                "dateTime": start_dt.isoformat(),
-                "timeZone": DEF_TZ,
-            },
-            "end": {
-                "dateTime": end_dt.isoformat(),
-                "timeZone": DEF_TZ,
-            },
-        }
-
-        created = (
-            self.service.events().insert(calendarId=calendar_id, body=event).execute()
-        )
-        logger.info("New event has been created")
-        return created
-
-    # ----------------------------------------------------------------------
-    # Print event table
-    # ----------------------------------------------------------------------
+    # ----- Print event table ----------------------------------------------
     @staticmethod
     def show_event_table(events):
         """Print a list of Google calendar events in a formatted table.

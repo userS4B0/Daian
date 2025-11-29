@@ -11,18 +11,14 @@ logger.debug("Loading app settings")
 try:
     load_dotenv()
 
-    # ----------------------------------------------------------------------
-    # Todoist API Token (defined on .env)
-    # ----------------------------------------------------------------------
+    # ----- Todoist API Token (defined on .env) ----------------------------
     TODOIST_API_TOKEN = os.getenv("TODOIST_API_TOKEN")
     if not TODOIST_API_TOKEN:
         logger.error(
             "Missing TODOIST_API_TOKEN in .env. Please create a .env file with your Todoist API token (`TODOIST_API_TOKEN=<yourtokenhere>`)."
         )
 
-    # ----------------------------------------------------------------------
-    # Google calendar credentials (defined on .env)
-    # ----------------------------------------------------------------------
+    # ----- Google calendar credentials (defined on .env) ------------------
     GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_CREDENTIALS_PATH")
     GOOGLE_TOKEN_PATH = os.getenv("GOOGLE_TOKEN_PATH")
 
@@ -40,7 +36,5 @@ except Exception as e:
     logger.error(f"Error loading app settings: {e}")
     print(f"Error loading app settings: {e}")
 
-# ----------------------------------------------------------------------
-# Default table format for CLI output using tabulate
-# ----------------------------------------------------------------------
+# ----- Default table format for CLI output using tabulate -------------
 DEFAULT_TABLEFORMAT = "rounded_outline"

@@ -8,9 +8,7 @@ from config.log.logger import setup_logger
 logger = setup_logger(__name__)
 
 
-# ----------------------------------------------------------------------
-# Format Date Time
-# ----------------------------------------------------------------------
+# ----- Format Date Time -----------------------------------------------
 def normalize_datetime(dt_str):
     """Convert an ISO 8601 datetime string to a UTC datetime object.
 
@@ -53,10 +51,7 @@ def normalize_datetime(dt_str):
             logger.debug("All attempts to format datetime failed, returning to dt")
             return dt
 
-
-# ----------------------------------------------------------------------
-# Get Current week
-# ----------------------------------------------------------------------
+# ----- Get Current week -----------------------------------------------
 def get_current_week() -> tuple[str, str]:
     """
     Get the start and end datetime of the current week in ISO 8601 format.
