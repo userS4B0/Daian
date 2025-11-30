@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import pathlib
 
-from datetime import datetime
 from tabulate import tabulate
 
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from utils.time_utils import get_current_week
+from utils.time_utils import get_current_week, normalize_datetime
 
 from config.app_settings import (
     GOOGLE_CREDENTIALS_PATH,
@@ -224,17 +223,10 @@ class GCalClient:
             )
 
             # Format datetime
-            try:
-                logger.debug("Formatting date/time")
-                if start and "T" in start:
-                    start = datetime.fromisoformat(start).strftime("%Y-%m-%d %H:%M")
-                if end and "T" in end:
-                    end = datetime.fromisoformat(end).strftime("%Y-%m-%d %H:%M")
-            except Exception as e:
-                logger.debug(f"Error formatting date: {e}")
-                pass
+            start_fmt = normalize_datetime(start)
+            end_fmt = normalize_datetime(end)
 
-            table.append([title, start, end])
+            table.append([title, start_fmt, end_fmt])
 
         # Print table with headers
         try:

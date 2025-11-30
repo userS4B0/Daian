@@ -1,9 +1,9 @@
-from datetime import datetime
 from typing import List, Dict
 from tabulate import tabulate
+
 from config.log.logger import setup_logger
 
-from utils.time_utils import get_current_week
+from utils.time_utils import get_current_week, normalize_datetime
 
 logger = setup_logger(__name__)
 
@@ -35,13 +35,13 @@ class Scheduler:
         free_slots = []
 
         # get_current_week returns ISO strings → convert to datetime
-        week_start_str, week_end_str = get_current_week()
+        week_start, week_end = get_current_week()
 
-        week_start = datetime.fromisoformat(week_start_str)
-        week_end = datetime.fromisoformat(week_end_str)
+        week_start_fmt = normalize_datetime(week_start)
+        week_end_fmt = normalize_datetime(week_end)
 
         # Initial pointer at the start of the week
-        current = week_start
+        current = week_start_fmt
 
         for event in events:
             start_str = event.get("start", {}).get("dateTime") or event.get(
@@ -55,20 +55,20 @@ class Scheduler:
                 logger.warning("Event without valid datetime fields detected")
                 continue
 
-            event_start = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
-            event_end = datetime.fromisoformat(end_str.replace("Z", "+00:00"))
+            event_start_fmt = normalize_datetime(start_str)
+            event_end_fmt = normalize_datetime(end_str)
 
             # If there is a gap between current pointer and next event
-            if event_start > current:
-                free_slots.append({"start": current, "end": event_start})
+            if event_start_fmt > current:
+                free_slots.append({"start": current, "end": event_start_fmt})
 
             # Move pointer forward
-            if event_end > current:
-                current = event_end
+            if event_end_fmt > current:
+                current = event_end_fmt
 
         # Final gap until end of week
-        if current < week_end:
-            free_slots.append({"start": current, "end": week_end})
+        if current < week_end_fmt:
+            free_slots.append({"start": current, "end": week_end_fmt})
 
         logger.debug("Free slots calculated successfully")
         return free_slots
