@@ -17,7 +17,6 @@ class TodoistClient(TodoistAPI):
 
     # BUG: Handle connection failed errors
     # Issue URL: https://github.com/userS4B0/my-daily-planner/issues/6
-    # Issue URL: https://github.com/userS4B0/my-daily-planner/issues/5
     # Handle program errors when connection to todoist API fails
     # assignees: userS4B0
     # labels: priority_medium, todoist, model_side
