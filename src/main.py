@@ -25,7 +25,7 @@ def main():
     computes free weekly slots and prints outputs.
     """
 
-    # --- Todoist tasks ---
+    # ----- Todoist Client -------------------------------------------------
     todoist_client = TodoistClient()
 
     logger.info(f"Fetching tasks for label: {NONSCHEDULED_TASKS_LABEL}")
@@ -35,7 +35,7 @@ def main():
         f"\nTareas por {NONSCHEDULED_TASKS_LABEL}:\n{todoist_client.tasks_totable(tasks)}"
     )
 
-    # --- Google Calendar events ---
+    # ----- Google Calendar Client -----------------------------------------
     gcal_client = GCalClient()
 
     calendars = [
@@ -50,7 +50,7 @@ def main():
     events = gcal_client.get_thisweek_events(calendars)
     print(f"\nThis week's events:\n{gcal_client.events_totable(events)}")
 
-    # --- Scheduler operations ---
+    # ----- Scheduler Operations -------------------------------------------
     scheduler = Scheduler()
 
     logger.info("Computing free slots for the current week")
