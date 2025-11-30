@@ -18,7 +18,7 @@ class TodoistClient(TodoistAPI):
     # BUG: Handle connection failed errors
     # Handle program errors when connection to todoist API fails
     # assignees: userS4B0
-    # labels: priority_low, bug, todoist_api
+    # labels: priority_medium, bug, todoist_api
     # milestone: v1.0.0
 
     # ----- Main Constructor -----------------------------------------------
