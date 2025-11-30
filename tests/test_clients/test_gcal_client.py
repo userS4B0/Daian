@@ -28,11 +28,14 @@ def gcal_client():
 
 
 # ----- Constructor / Auth Tests ---------------------------------------
-def test_constructor_initializes_gcal_client():
+def test_constructor_initializes_gcal_client(monkeypatch):
     """
     Test GCalClient constructor runs without errors.
     Authentication is mocked.
     """
+    # Mock env var to avoid pathlib errors
+    monkeypatch.setenv("GOOGLE_CREDENTIALS_PATH", "/tmp/fake_creds.json")
+    
     with patch("client.gcal_client.GCalClient._authenticate"):
         client = GCalClient()
         assert client.creds is None
