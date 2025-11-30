@@ -1,15 +1,19 @@
 from todoist_api_python.api import TodoistAPI
 from tabulate import tabulate
 
-from utils.time_utils import normalize_datetime
+from utils.time_utils import normalize_datetime, is_expired_by_days
 
 from config.app_settings import TODOIST_API_TOKEN, DEF_TABLE_FMT
-
 from config.log.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 
+# FEATURE: Implement task retrieving cache
+# Ensure minimizing API request by defining local cache
+# assignees: userS4B0
+# labels: priority_medium, todoist, model_side
+# milestone: v1.0.1
 class TodoistClient(TodoistAPI):
     """
     Client wrapper for interacting with the Todoist API
@@ -28,6 +32,33 @@ class TodoistClient(TodoistAPI):
         Initialize the TodoistClient with the API token.
         """
         super().__init__(TODOIST_API_TOKEN)
+
+    # ----- Retrieve expired tasks -----------------------------------------
+    def get_expired_tasks(self) -> list[object]:
+        """
+        Return tasks whose due date expired more than 1 day ago.
+
+        Returns:
+            list[object]: List of overdue tasks (more than 1 day old)
+        """
+        expired_tasks = []
+
+        all_tasks = self.get_tasks()
+
+        for task in all_tasks:
+            if not task.due:
+                continue
+
+            # Skip recurrent tasks
+            if task.due.is_recurring:
+                continue
+
+            # Now offload the comparison to utility function
+            if is_expired_by_days(task.due.date, days=1):
+                expired_tasks.append(task)
+
+        return expired_tasks
+
 
     # ----- Build task table -----------------------------------------------
     @staticmethod
