@@ -5,6 +5,9 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-green)
 
+[![Unit Tests](https://github.com/userS4B0/my-daily-planner/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/userS4B0/my-daily-planner/actions/workflows/test.yml)
+[![PEP8 Compliant](https://github.com/userS4B0/my-daily-planner/actions/workflows/pep8.yaml/badge.svg)](https://github.com/userS4B0/my-daily-planner/actions/workflows/pep8.yaml)
+
 ---
 
 ## 📌 Overview
