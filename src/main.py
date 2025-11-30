@@ -30,10 +30,15 @@ def main():
 
     logger.info(f"Fetching tasks for label: {NONSCHEDULED_TASKS_LABEL}")
 
-    tasks = todoist_client.get_tasks(label=NONSCHEDULED_TASKS_LABEL)
+    nonscheduled_tasks = todoist_client.get_tasks(label=NONSCHEDULED_TASKS_LABEL)
     print(
-        f"\nTareas por {NONSCHEDULED_TASKS_LABEL}:\n{todoist_client.tasks_totable(tasks)}"
+        f"\nTareas por {NONSCHEDULED_TASKS_LABEL}:\n{todoist_client.tasks_totable(nonscheduled_tasks)}"
     )
+
+    logger.info("Fetching expired tasks")
+
+    expired_tasks = todoist_client.get_expired_tasks()
+    print(f"\nTareas expiradas:\n{todoist_client.tasks_totable(expired_tasks)}")
 
     # ----- Google Calendar Client -----------------------------------------
     gcal_client = GCalClient()
