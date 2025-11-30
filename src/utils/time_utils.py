@@ -75,3 +75,59 @@ def get_current_week() -> tuple[str, str]:
 
     # Return ISO 8601 strings
     return start_of_week.isoformat(), end_of_week.isoformat()
+
+
+# ----- Get Today ------------------------------------------------------
+def get_today():
+    """
+    Return the current datetime based on the configured timezone.
+
+    Returns:
+        datetime: The current datetime in the most appropriate timezone available based on configuration.
+    """
+    try:
+        today = datetime.now(DEF_TZ)
+
+    except Exception:
+        logger.warning("DEF_TZ variable not found on .env, falling back to FALLBACK_TZ")
+
+        try:
+            today = datetime.now(FALLBACK_TZ)
+
+        except Exception:
+            logger.warning(
+                "FALLBACK_TZ variable not found on .env, falling back to native datetime"
+            )
+            logger.debug("All attempts to format datetime failed, returning to dt")
+
+            today = datetime.now()
+    return today
+
+
+# ----- Is date expired ------------------------------------------------
+def is_expired_by_days(due_date_str: str, days: int = 1) -> bool:
+    """
+    Check whether a date (ISO8601 string) expired more than `days` days ago.
+
+    Args:
+        due_date_str (str): Date string from Todoist (task.due.date).
+        days (int): Number of days threshold.
+
+    Returns:
+        bool: True if the date is earlier than today - `days`.
+    """
+    if not due_date_str:
+        return False
+
+    # Normalize ISO date or return original value
+    normalized = normalize_datetime(due_date_str)
+
+    if not isinstance(normalized, datetime):
+        # If normalization fails, the function returns the raw string
+        # → this is not a valid datetime → skip gracefully
+        return False
+
+    due_date = normalized.date()
+    today = get_today().date()
+
+    return due_date < today - timedelta(days=days)
