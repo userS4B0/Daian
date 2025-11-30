@@ -28,20 +28,24 @@ def gcal_client():
 
 
 # ----- Constructor / Auth Tests ---------------------------------------
-def test_constructor_initializes_gcal_client():
+def test_constructor_initializes_gcal_client(tmp_path):
     """
     Test GCalClient constructor runs without errors.
     Authentication is mocked and credentials env var is faked.
     """
-    with (
-        patch("client.gcal_client.GOOGLE_CREDENTIALS_PATH", "/tmp/fake.json"),
-        patch("client.gcal_client.GOOGLE_TOKEN_PATH", "/tmp/token.json"),
-        patch("client.gcal_client.GCalClient._authenticate"),
-    ):
-        client = GCalClient()
-        assert client is not None
-        assert str(client.creds_path) == "/tmp/fake.json"
-        assert str(client.token_path) == "/tmp/token.json"
+    dummy_creds = tmp_path / "creds.json"
+    dummy_token = tmp_path / "token.json"
+    dummy_creds.write_text("{}")
+    dummy_token.write_text("{}")
+
+    with patch.object(GCalClient, "_authenticate", return_value=None):
+        client = GCalClient(
+            creds_path=str(dummy_creds),
+            token_path=str(dummy_token)
+        )
+
+    assert client.creds_path == dummy_creds
+    assert client.token_path == dummy_token
 
 
 # ----- Tests for events_totable ---------------------------------------

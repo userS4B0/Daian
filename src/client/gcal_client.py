@@ -30,20 +30,29 @@ class GCalClient:
     """
 
     # ----- Main Constructor -----------------------------------------------
-    def __init__(self):
+    def __init__(self, creds_path: str | None = None, token_path: str | None = None):
         """Path initialization, credential containerization and authentication."""
 
-        creds_raw = GOOGLE_CREDENTIALS_PATH or "/dev/null"
-        token_raw = GOOGLE_TOKEN_PATH or "/dev/null"
+        raw_creds_path = creds_path or GOOGLE_CREDENTIALS_PATH
+        raw_token_path = token_path or GOOGLE_TOKEN_PATH
 
-        self.creds_path = pathlib.Path(creds_raw)
-        self.token_path = pathlib.Path(token_raw)
+        # Validación segura antes de crear pathlib.Path
+        if not raw_creds_path:
+            raise ValueError("GOOGLE_CREDENTIALS_PATH is not set.")
+        if not raw_token_path:
+            raise ValueError("GOOGLE_TOKEN_PATH is not set.")
+
+        # Ahora sí es seguro hacer esto:
+        self.creds_path = pathlib.Path(raw_creds_path)
+        self.token_path = pathlib.Path(raw_token_path)
 
         self.creds = None
         self.service = None
 
+        # Dejamos _authenticate para más tarde o lo permitimos mockear en tests
         self._authenticate()
-        logger.debug("GcalClient initialized")
+
+        logger.debug("GCalClient initialized")
 
     # ----- OAuth2 Authentication ------------------------------------------
     def _authenticate(self):
