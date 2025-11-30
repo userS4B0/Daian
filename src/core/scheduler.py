@@ -1,9 +1,11 @@
 from typing import List, Dict
 from tabulate import tabulate
 
-from config.log.logger import setup_logger
-
 from utils.time_utils import get_current_week, normalize_datetime
+
+from config.app_settings import DEF_DATETIME_FMT, DEF_TABLE_FMT
+
+from config.log.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -14,9 +16,11 @@ class Scheduler:
     This class assumes events are already normalized, sorted, and validated.
     """
 
+    # ----- Main Constructor -----------------------------------------------
     def __init__(self):
         logger.debug("Scheduler initialized")
 
+    # ----- Get free Google Calendar slots ---------------------------------
     @staticmethod
     def get_free_slots(events: List[Dict]) -> List[Dict]:
         """
@@ -24,8 +28,6 @@ class Scheduler:
 
         Args:
             events (List[Dict]): List of calendar events already sorted by start time.
-            week_start (datetime): Start datetime of the week.
-            week_end (datetime): End datetime of the week.
 
         Returns:
             List[Dict]: List of free time slots as dictionaries with start and end keys.
@@ -73,6 +75,7 @@ class Scheduler:
         logger.debug("Free slots calculated successfully")
         return free_slots
 
+    # ----- Build free slots table -----------------------------------------
     @staticmethod
     def free_slots_totable(free_slots: List[Dict]) -> str:
         """
@@ -90,11 +93,11 @@ class Scheduler:
         for slot in free_slots:
             free_slot_table.append(
                 [
-                    slot["start"].strftime("%Y-%m-%d %H:%M"),
-                    slot["end"].strftime("%Y-%m-%d %H:%M"),
+                    slot["start"].strftime(DEF_DATETIME_FMT),
+                    slot["end"].strftime(DEF_DATETIME_FMT),
                     str(slot["end"] - slot["start"]),
                 ]
             )
 
         headers = ["Free From", "Free Until", "Duration"]
-        return tabulate(free_slot_table, headers=headers, tablefmt="grid")
+        return tabulate(free_slot_table, headers=headers, tablefmt=DEF_TABLE_FMT)

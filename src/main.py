@@ -29,10 +29,11 @@ def main():
     todoist_client = TodoistClient()
 
     logger.info(f"Fetching tasks for label: {NONSCHEDULED_TASKS_LABEL}")
-    print(f"\nFetching tasks for label: {NONSCHEDULED_TASKS_LABEL}\n")
 
     tasks = todoist_client.get_tasks(label=NONSCHEDULED_TASKS_LABEL)
-    todoist_client.show_task_table(tasks)
+    print(
+        f"\nTareas por {NONSCHEDULED_TASKS_LABEL}:\n{todoist_client.tasks_totable(tasks)}"
+    )
 
     # --- Google Calendar events ---
     gcal_client = GCalClient()
@@ -45,21 +46,18 @@ def main():
     ]
 
     logger.info("Fetching events from calendars")
-    print("\nShowing this week's events from all calendars:")
 
     events = gcal_client.get_thisweek_events(calendars)
-    gcal_client.show_event_table(events)
+    print(f"\nThis week's events:\n{gcal_client.events_totable(events)}")
 
     # --- Scheduler operations ---
     scheduler = Scheduler()
 
     logger.info("Computing free slots for the current week")
-    print("\nDetected free slots for this week:\n")
 
     free_slots = scheduler.get_free_slots(events)
 
-    free_slots_table = scheduler.free_slots_totable(free_slots) 
-    print(free_slots_table)
+    print(f"\nThis week's avalible slots:\n{scheduler.free_slots_totable(free_slots)}")
 
 
 if __name__ == "__main__":
@@ -70,7 +68,6 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         logger.info("Program interrupted by user. Exiting cleanly...")
-        print("\n[INFO] Program interrupted by user. Exiting cleanly...\n")
         sys.exit(0)
 
     except ValueError as e:

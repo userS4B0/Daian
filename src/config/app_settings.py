@@ -37,4 +37,7 @@ except Exception as e:
     print(f"Error loading app settings: {e}")
 
 # ----- Default table format for CLI output using tabulate -------------
-DEFAULT_TABLEFORMAT = "rounded_outline"
+DEF_TABLE_FMT = "rounded_outline"
+
+# ----- Default date/time format ---------------------------------------
+DEF_DATETIME_FMT = "%Y-%m-%d %H:%M"

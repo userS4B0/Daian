@@ -13,7 +13,7 @@ from utils.time_utils import get_current_week, normalize_datetime
 from config.app_settings import (
     GOOGLE_CREDENTIALS_PATH,
     GOOGLE_TOKEN_PATH,
-    DEFAULT_TABLEFORMAT,
+    DEF_TABLE_FMT,
 )
 
 from config.log.logger import setup_logger
@@ -23,26 +23,13 @@ logger = setup_logger(__name__)
 # Necessaroy scope for complete read/write operations in Google Calendar
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
-# TODO: Event Movement
-# Descr.: Implement proper functionality for event movement & rescheduling
-
 
 class GCalClient:
     """
-    Simple Wrapper to work with google calendar
-
-    Functionality:
-        - OAuth2 authentication using user credentials
-        - Auto generate & update of `google_token.json`
-        - Event Listing
-        - Event Creation
-        - Event Deletion
-        - Event Movement
-
-    This client is designed to integrate in ETL flows,
-    personal tasks automation and syncronizing with other APIs.
+    Client Wrapper to work with Google Calendar API
     """
 
+    # ----- Main Constructor -----------------------------------------------
     def __init__(self):
         """Path initialization, credential containerization and authentication."""
         self.creds_path = pathlib.Path(GOOGLE_CREDENTIALS_PATH)
@@ -52,15 +39,12 @@ class GCalClient:
         self.service = None
 
         self._authenticate()
+        logger.debug("GcalClient initialized")
 
     # ----- OAuth2 Authentication ------------------------------------------
     def _authenticate(self):
         """
-        Handles OAuth2 authentication cycle:
-            - If `google_token.json` exists, tries to load it.
-            - If it's not valid, it loads an OAuth2 flow on web browser.
-            - Saves received token in specific path defined in .env
-            - Builds the Google Calendar API client.
+        Handles OAuth2 authentication cycle.
         """
 
         # Load existing token if it's present
@@ -95,18 +79,19 @@ class GCalClient:
         Returns a list of a desired number (defaults 10 events) of events from different calendars.
 
         Args:
-            max_results (int): Max number of events to retrieve.
             calendar_ids (list[str]): List of calendar IDs to fetch events from.
+            max_results (int): Max number of events to retrieve.
 
         Returns:
             list[dict]: Event list (dict) retrieved from API.
         """
-        events = []
+        retrieved_events = []
 
         for calendar_id in calendar_ids:
             try:
                 logger.debug("Processing calendar events")
-                events_result = (
+
+                fetched_events = (
                     self.service.events()
                     .list(
                         calendarId=calendar_id,
@@ -116,25 +101,21 @@ class GCalClient:
                     )
                     .execute()
                 )
-                events = events_result.get("items", [])
+                events = fetched_events.get("items", [])
 
                 # Adds Calendar ID to every event for references
-                for e in events:
-                    e["_calendar_id"] = calendar_id
-                events.extend(events)
+                for event in events:
+                    event["_calendar_id"] = calendar_id
+
+                # Add events to the combined list
+                retrieved_events.extend(events)
 
             except Exception as e:
                 logger.error(f"Failed to process calendar: {e}")
 
-        # Sort all events by start date/time
-        events.sort(
-            key=lambda e: e.get("start", {}).get("dateTime")
-            or e.get("start", {}).get("date")
-        )
+        return self.sort_events_by_date(retrieved_events)
 
-        return events
-
-    # ----- List this week's events ---------------------------------------- 
+    # ----- List this week's events ----------------------------------------
     def get_thisweek_events(self, calendar_ids: list[str]) -> list[dict]:
         """
         Retrieve all events from the current week across multiple calendars.
@@ -145,7 +126,7 @@ class GCalClient:
         Returns:
             list[dict]: Combined list of all events from the current week.
         """
-        events = []
+        retrieved_events = []
 
         # Get ISO 8601 start and end of current week
         week_start_str, week_end_str = get_current_week()
@@ -155,7 +136,7 @@ class GCalClient:
                 logger.debug("Processing calendar events")
 
                 # Fetch events for the calendar within the week range
-                events_result = (
+                fetched_events = (
                     self.service.events()
                     .list(
                         calendarId=calendar_id,
@@ -167,41 +148,30 @@ class GCalClient:
                     .execute()
                 )
 
-                events = events_result.get("items", [])
+                events = fetched_events.get("items", [])
 
-                # Tag each event with its calendar ID for reference
-                for e in events:
-                    e["_calendar_id"] = calendar_id
+                # Adds Calendar ID to every event for references
+                for event in events:
+                    event["_calendar_id"] = calendar_id
 
                 # Add events to the combined list
-                events.extend(events)
+                retrieved_events.extend(events)
 
             except Exception as e:
                 logger.error(f"Failed to process calendar: {e}")
 
-            # Sort all events by start time
-        events.sort(
-            key=lambda e: e.get("start", {}).get("dateTime")
-            or e.get("start", {}).get("date")
-        )
+        return self.sort_events_by_date(retrieved_events)
 
-        return events
-
-    # ----- Print event table ----------------------------------------------
+    # ----- Build event table ----------------------------------------------
     @staticmethod
-    def show_event_table(events):
-        """Print a list of Google calendar events in a formatted table.
-
-        This method is static because it does not rely on instance attributes.
+    def events_totable(events: list[dict]) -> str:
+        """Formats a list of Google calendar events in a formatted table.
 
         Args:
-            events (list): A list of Google calendar events.
+            events (list[dict]): A list of Google calendar events.
 
-        The table includes the following columns:
-            - Calendar: Calendar associated to the event
-            - Title: Event title
-            - Start time: Event start date/time
-            - End time: Event end date/time
+        Returns:
+            str: formatted tabulate string table with all Google Calendar events
         """
         logger.info("Preparing events table for display")
 
@@ -209,8 +179,9 @@ class GCalClient:
             logger.warning("No events found!")
             return
 
+        events_table = []
         # Build table rows
-        table = []
+
         for event in events:
             logger.debug("Processing event entry")
 
@@ -226,17 +197,31 @@ class GCalClient:
             start_fmt = normalize_datetime(start)
             end_fmt = normalize_datetime(end)
 
-            table.append([title, start_fmt, end_fmt])
+            events_table.append([title, start_fmt, end_fmt])
 
         # Print table with headers
-        try:
-            logger.debug("Rendering event table for console output")
-            print(
-                tabulate(
-                    table,
-                    headers=["Title", "Start time", "End time"],
-                    tablefmt=DEFAULT_TABLEFORMAT,
-                )
-            )
-        except Exception as e:
-            logger.error(f"Error while printing table: {e}")
+        logger.debug("Rendering event table for console output")
+
+        return tabulate(
+            events_table,
+            headers=["Title", "Start time", "End time"],
+            tablefmt=DEF_TABLE_FMT,
+        )
+
+    # ----- Sort Events ----------------------------------------------------
+    @staticmethod
+    def sort_events_by_date(events: list[dict]) -> list[dict]:
+        """
+        Sorts a list of Google calendar events by start date & time.
+
+        Args:
+            events (list[dict]): A list of Google Calendar events.
+
+        Returns:
+            list[dict]: A list of Google Calendar events sorted by date & time.
+        """
+        return sorted(
+            events,
+            key=lambda e: e.get("start", {}).get("dateTime")
+            or e.get("start", {}).get("date"),
+        )
