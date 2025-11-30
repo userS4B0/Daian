@@ -23,6 +23,9 @@ jobs:
         uses: "alstr/todo-to-issue-action@v5"
         with:
           INSERT_ISSUE_URLS: "true"
+          IDENTIFIERS: '[{"name": "TODO", "labels": ["todo"]}, {"name": "FIXME", "labels": ["bug"]}, {"name": "BUG", "labels": ["bug"]}, {"name": "FEATURE", "labels": ["feature"]}]'
+          IGNORE: "TODOIST"
+
 
       - name: Set Git user
         run: |

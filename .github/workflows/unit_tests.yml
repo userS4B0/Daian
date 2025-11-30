@@ -3,7 +3,7 @@
 # due to credential path initialization and the implicit
 # dependency on authentication. They pass locally.
 # assignees: userS4B0
-# labels: priority_medium, bug, cicd
+# labels: priority_high, cicd
 # milestone: v1.0.0
 
 name: Run Tests
