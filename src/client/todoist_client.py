@@ -13,7 +13,7 @@ logger = setup_logger(__name__)
 # Issue URL: https://github.com/userS4B0/my-daily-planner/issues/8
 # Ensure minimizing API request by defining local cache
 # assignees: userS4B0
-# labels: priority_medium, todoist, model_side
+# labels: priority_low, todoist, model_side
 # milestone: v1.0.1
 class TodoistClient(TodoistAPI):
     """
