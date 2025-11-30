@@ -10,6 +10,7 @@ logger = setup_logger(__name__)
 
 
 # FEATURE: Implement task retrieving cache
+# Issue URL: https://github.com/userS4B0/my-daily-planner/issues/8
 # Ensure minimizing API request by defining local cache
 # assignees: userS4B0
 # labels: priority_medium, todoist, model_side
