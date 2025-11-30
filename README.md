@@ -67,17 +67,17 @@ This project is intentionally built for **expansion**, including future integrat
 - [ ] Add environment variable loader  
 
 ### **Phase 2 — Automation Layer**
-- [ ] Add cron/Docker execution support  
-- [ ] Improve logging and error handling  
-- [ ] Create "dry-run" preview mode  
-- [ ] Add configuration YAML  
+- [!] Add cron/Docker execution support  
+- [!] Improve logging and error handling  
+- [!] Create "dry-run" preview mode  
+- [!] Add configuration YAML  
 
 ### **Phase 3 — Intelligence Upgrade (Future)**
-- [ ] LLM-based task duration estimation  
-- [ ] Natural language complexity classifier  
-- [ ] AI-generated daily planning suggestions  
-- [ ] Focus-mode time blocking engine  
-- [ ] Dashboard or web UI (FastAPI)  
+- [!] LLM-based task duration estimation  
+- [!] Natural language complexity classifier  
+- [!] AI-generated daily planning suggestions  
+- [!] Focus-mode time blocking engine  
+- [!] Dashboard or web UI (FastAPI)  
 
 ---
 

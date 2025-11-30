@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint:
-    name: Lint & PEP8 Check
+    name: Ruff Lint & PEP8 Check
     runs-on: ubuntu-latest
 
     steps:
@@ -29,11 +29,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-          pip install black isort flake8
+        # pip install ruff isort
 
       # Auto Formattings & PEP8 Cheks
-      - name: Check formatting with Black
-        run: black --check src tests
+      - name: Lint and auto-fix with Ruff
+        run: |
+           ruff check src tests --fix
 
-      - name: Check import order with isort
-        run: isort --check-only src tests
+      # FEATURE: Implement more checks & auto formatting
+      # - name: Check import order with isort
+      #   run: isort --check-only src tests

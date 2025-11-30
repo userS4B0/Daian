@@ -15,7 +15,7 @@ class TodoistClient(TodoistAPI):
     Client wrapper for interacting with the Todoist API
     """
 
-    # TODO: Handle connection failed errors
+    # BUG: Handle connection failed errors
     # Descr.: Handle program errors when connection to todoist API fails
 
     # ----- Main Constructor -----------------------------------------------
