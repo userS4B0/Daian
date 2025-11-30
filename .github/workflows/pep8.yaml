@@ -1,0 +1,39 @@
+name: Lint and Format Check
+
+# Triggers
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint & PEP8 Check
+    runs-on: ubuntu-latest
+
+    steps:
+      # Obtain codebase
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install black isort flake8
+
+      # Auto Formattings & PEP8 Cheks
+      - name: Check formatting with Black
+        run: black --check src tests
+
+      - name: Check import order with isort
+        run: isort --check-only src tests

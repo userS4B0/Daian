@@ -1,4 +1,5 @@
 from tabulate import tabulate
+from datetime import datetime
 
 from utils.time_utils import get_current_week, normalize_datetime
 
@@ -21,28 +22,35 @@ class Scheduler:
 
     # ----- Get free Google Calendar slots ---------------------------------
     @staticmethod
-    def get_free_slots(events: list[dict]) -> list[dict]:
+    def get_free_slots(
+        events: list[dict],
+        week_start: "datetime | None" = None,
+        week_end: "datetime | None" = None,
+    ) -> list[dict]:
         """
         Identify free time intervals in the weekly calendar.
 
         Args:
-            events (List[Dict]): List of calendar events already sorted by start time.
+            events (list[dict]): List of calendar events already sorted by start time.
+            week_start (datetime | None): Optional start of the week.
+                If not provided, will use get_current_week() internally.
+            week_end (datetime | None): Optional end of the week.
+                If not provided, will use get_current_week() internally.
 
         Returns:
-            List[Dict]: List of free time slots as dictionaries with start and end keys.
+            list[dict]: List of free time slots as dictionaries with 'start' and 'end' keys.
         """
         logger.debug("Calculating free slots based on provided events")
 
         free_slots = []
 
-        # get_current_week returns ISO strings → convert to datetime
-        week_start, week_end = get_current_week()
+        # Use provided week_start/week_end or fallback to get_current_week()
+        if week_start is None or week_end is None:
+            week_start_str, week_end_str = get_current_week()
+            week_start = normalize_datetime(week_start_str)
+            week_end = normalize_datetime(week_end_str)
 
-        week_start_fmt = normalize_datetime(week_start)
-        week_end_fmt = normalize_datetime(week_end)
-
-        # Initial pointer at the start of the week
-        current = week_start_fmt
+        current = week_start  # Initial pointer at the start of the week
 
         for event in events:
             start_str = event.get("start", {}).get("dateTime") or event.get(
@@ -56,20 +64,20 @@ class Scheduler:
                 logger.warning("Event without valid datetime fields detected")
                 continue
 
-            event_start_fmt = normalize_datetime(start_str)
-            event_end_fmt = normalize_datetime(end_str)
+            event_start = normalize_datetime(start_str)
+            event_end = normalize_datetime(end_str)
 
-            # If there is a gap between current pointer and next event
-            if event_start_fmt > current:
-                free_slots.append({"start": current, "end": event_start_fmt})
+            # If there is a gap between current pointer and next event, record it
+            if event_start > current:
+                free_slots.append({"start": current, "end": event_start})
 
             # Move pointer forward
-            if event_end_fmt > current:
-                current = event_end_fmt
+            if event_end > current:
+                current = event_end
 
         # Final gap until end of week
-        if current < week_end_fmt:
-            free_slots.append({"start": current, "end": week_end_fmt})
+        if current < week_end:
+            free_slots.append({"start": current, "end": week_end})
 
         logger.debug("Free slots calculated successfully")
         return free_slots
