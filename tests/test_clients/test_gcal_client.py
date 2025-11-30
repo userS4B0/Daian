@@ -98,6 +98,14 @@ def test_sort_events_by_date():
     assert sorted_events[1]["summary"] == "B"
 
 
+# BUG: GCalClient tests failing in CI
+# GCalClient-related tests fail only in GitHub Actions
+# due to credential path initialization and the implicit
+# dependency on authentication. They pass locally.
+# assignees: userS4B0
+# labels: priority_high, cicd
+# milestone: v1.0.0
+
 # ----------------- Tests for get_numberof_events -----------------
 def test_get_numberof_events_merges_and_sorts(gcal_client):
     """

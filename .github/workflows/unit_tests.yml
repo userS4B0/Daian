@@ -1,11 +1,3 @@
-# BUG: GCalClient tests failing in CI
-# GCalClient-related tests fail only in GitHub Actions
-# due to credential path initialization and the implicit
-# dependency on authentication. They pass locally.
-# assignees: userS4B0
-# labels: priority_high, cicd
-# milestone: v1.0.0
-
 name: Run Tests
 
 # Triggers
