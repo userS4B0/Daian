@@ -32,8 +32,12 @@ class GCalClient:
     # ----- Main Constructor -----------------------------------------------
     def __init__(self):
         """Path initialization, credential containerization and authentication."""
-        self.creds_path = pathlib.Path(GOOGLE_CREDENTIALS_PATH)
-        self.token_path = pathlib.Path(GOOGLE_TOKEN_PATH)
+
+        creds_raw = GOOGLE_CREDENTIALS_PATH or "/dev/null"
+        token_raw = GOOGLE_TOKEN_PATH or "/dev/null"
+
+        self.creds_path = pathlib.Path(creds_raw)
+        self.token_path = pathlib.Path(token_raw)
 
         self.creds = None
         self.service = None
