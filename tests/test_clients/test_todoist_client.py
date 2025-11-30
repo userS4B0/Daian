@@ -15,7 +15,7 @@ import pytest
 from client.todoist_client import TodoistClient
 
 
-# ----------------- Fixture for TodoistClient -----------------
+# ----- Fixture for TodoistClient --------------------------------------
 @pytest.fixture
 def todoist_client():
     """
@@ -24,7 +24,7 @@ def todoist_client():
     return TodoistClient()
 
 
-# ----------------- Constructor Tests -----------------
+# ----- Constructor Tests ----------------------------------------------
 def test_constructor_initializes_client(todoist_client):
     """
     Test that the TodoistClient constructor initializes correctly.
@@ -32,7 +32,7 @@ def test_constructor_initializes_client(todoist_client):
     assert isinstance(todoist_client, TodoistClient)
 
 
-# ----------------- Tests for tasks_totable -----------------
+# ----- Tests for tasks_totable ----------------------------------------
 def test_tasks_totable_empty_list():
     """
     Test tasks_totable with an empty list.
