@@ -99,6 +99,7 @@ def test_sort_events_by_date():
 
 
 # BUG: GCalClient tests failing in CI
+# Issue URL: https://github.com/userS4B0/my-daily-planner/issues/7
 # GCalClient-related tests fail only in GitHub Actions
 # due to credential path initialization and the implicit
 # dependency on authentication. They pass locally.
