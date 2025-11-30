@@ -1,4 +1,3 @@
-from typing import List, Dict
 from tabulate import tabulate
 
 from utils.time_utils import get_current_week, normalize_datetime
@@ -22,7 +21,7 @@ class Scheduler:
 
     # ----- Get free Google Calendar slots ---------------------------------
     @staticmethod
-    def get_free_slots(events: List[Dict]) -> List[Dict]:
+    def get_free_slots(events: list[dict]) -> list[dict]:
         """
         Identify free time intervals in the weekly calendar.
 
@@ -77,7 +76,7 @@ class Scheduler:
 
     # ----- Build free slots table -----------------------------------------
     @staticmethod
-    def free_slots_totable(free_slots: List[Dict]) -> str:
+    def free_slots_totable(free_slots: list[dict]) -> str:
         """
         Convert a list of free slots into a formatted table string.
 
