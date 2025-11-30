@@ -1,7 +1,6 @@
-pytest
-pytest-cov
-pytest-mock
-freezegun
-faker
-responses
-coverage
+pytest>=8.0.0
+pytest-cov>=4.0.0
+pytest-mock>=4.0.0
+freezegun>=2.4.0
+faker>=18.0.0
+responses>=0.26.0
