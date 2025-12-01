@@ -41,12 +41,12 @@ def main():
     expired_tasks = todoist_client.get_expired_tasks()
     print(f"\nTareas expiradas:\n{todoist_client.tasks_totable(expired_tasks)}")
 
-    # ----- Planner Operations ---------------------------------------------
-    planner = Planner(todoist_client)
+    # # ----- Planner Operations ---------------------------------------------
+    # planner = Planner(todoist_client)
 
-    # Add expired tasks to re-scheduler query
-    planner.add_to_nonscheduled_queue(expired_tasks)
-    logger.info("New tasks added to re-schedule queue")
+    # # Add expired tasks to re-scheduler query
+    # planner.add_to_nonscheduled_queue(expired_tasks)
+    # logger.info("New tasks added to re-schedule queue")
     
     # ----- Google Calendar Client -----------------------------------------
     gcal_client = GCalClient()
