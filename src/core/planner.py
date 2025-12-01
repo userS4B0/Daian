@@ -3,7 +3,11 @@ from config.user_settings import NONSCHEDULED_TASKS_LABEL
 
 logger = setup_logger(__name__)
 
-
+# FEATURE: Implement basic google calendar event functions
+# Implement rearranging Google Calendar Events
+# assignees: userS4B0
+# labels: priority_medium, core, controller_side
+# milestone: v1.0.0
 class Planner:
     """
     High-level controller for task and event management logic.
