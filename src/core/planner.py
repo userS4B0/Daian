@@ -29,7 +29,7 @@ class Planner:
 
             self.todoist.update_task(task_id=task.id, due_string="no date")
 
-    def apply_label_to_tasks(self, tasks: list[object], label: str) -> None:
+    def apply_label_to_tasks(self, tasks: list[object], new_label: str) -> None:
         """
         Assign the specified label to all provided Todoist tasks.
         """
@@ -37,7 +37,12 @@ class Planner:
             if not task.id:
                 continue
 
-            self.todoist.update_task(task_id=task.id, labels=[label])
+            # Copy existing labels and add new one if missing
+            task_labels = task.labels
+            if new_label not in task_labels:
+                task_labels.append(new_label)
+
+            self.todoist.update_task(task_id=task.id, labels=task_labels)
 
     def add_to_nonscheduled_queue(self, tasks: list[object]) -> None:
         """
