@@ -1,3 +1,5 @@
+from core.duration_engine import DurationEngine
+
 from config.log.logger import setup_logger
 from config.user_settings import NONSCHEDULED_TASKS_LABEL
 
@@ -14,10 +16,11 @@ class Planner:
     Handles classification, updates, and synchronization across services.
     """
 
-    def __init__(self, todoist_client):
+    def __init__(self, todoist_client, history_path=None):
         logger.debug("Planner initialized")
 
         self.todoist = todoist_client
+        self.duration_engine = DurationEngine(history_path)
 
     def remove_task_duedate(self, tasks: list[object]) -> None:
         """
@@ -51,3 +54,6 @@ class Planner:
 
         self.remove_task_duedate(tasks)
         self.apply_label_to_tasks(tasks, NONSCHEDULED_TASKS_LABEL)
+
+    def estimate_duration(self, task):
+        return self.duration_engine.estimate(task)
