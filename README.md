@@ -239,9 +239,3 @@ Contributions, ideas, and feature requests are welcome.
 Feel free to open issues or submit PRs.
 
 ---
-
-## 📜 License
-
-MIT License — free to use, modify, and improve.
-
----
