@@ -238,4 +238,28 @@ python src/main.py --dry-run
 Contributions, ideas, and feature requests are welcome.
 Feel free to open issues or submit PRs.
 
+## 🧭 Ethical Use Guidelines (DAIAN)
+
+All users of DAIAN agree to follow these principles:
+
+- Respect for Privacy
+- Do not use DAIAN to collect, track, or process personal data without consent.
+- Protect private and sensitive information with strong security measures.
+- Respect for People
+- You must not use the system to harm, discriminate, profile, or exploit individuals or groups.
+- Prohibition of Harmful Uses
+
+You may not use DAIAN for:
+
+- Surveillance
+- Military or security operations
+- Workforce exploitation or automated job termination
+- Unauthorized tracking
+- Any activity that violates human rights
+- Transparency & Accountability
+
+Any modification of DAIAN must remain open, public, and under the HL3-NC license.
+
+If you distribute derivatives, acknowledge DAIAN’s original author.
+
 ---
