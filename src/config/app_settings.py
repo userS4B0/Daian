@@ -41,3 +41,6 @@ DEF_TABLE_FMT = "rounded_outline"
 
 # ----- Default date/time format ---------------------------------------
 DEF_DATETIME_FMT = "%Y-%m-%d %H:%M"
+
+# ----- Default task_duration history path -----------------------------
+DEF_TASK_HISTORY_STORE_PATH = "data/task_duration_history.json"
