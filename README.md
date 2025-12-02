@@ -66,8 +66,7 @@ This project is intentionally built for **expansion**, including future integrat
 - [>] Define rule-based task duration engine  
 - [>] Build availability scanner  
 - [X] Build scheduling logic (basic fit algorithm)  
-- [ ] Create CLI entrypoint  
-- [ ] Add environment variable loader  
+- [ ] Create CLI entrypoint    
 
 ### **Phase 2 — Automation Layer**
 - [!] Add cron/Docker execution support  
