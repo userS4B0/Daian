@@ -25,6 +25,23 @@ This project is intentionally built for **expansion**, including future integrat
 
 ---
 
+## 📜 License
+
+DAIAN is distributed under the Hippocratic License 3.0 — Non Commercial (HL3-NC).
+
+This license enforces:
+
+- Ethical use (no surveillance, discrimination, military use, or harmful automation)
+- Strict privacy protection
+- Non-commercial use only
+- Copyleft requirements (derivatives must remain open and under HL3-NC)
+- Full attribution
+- A “no warranty” clause
+
+For details, see the full [[LICENSE]] file in this repository.
+
+---
+
 ## ✨ Key Features
 
 - 🔍 **Todoist task ingestion** (filters, labels, priorities)  
