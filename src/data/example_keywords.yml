@@ -1,0 +1,30 @@
+# ===================================================================
+#  DAIAN – Task Duration Baseline Keywords
+#  Each keyword provides a baseline duration estimate (in minutes)
+# ===================================================================
+
+# ----- Household & Maintenance Tasks ----------------------------------
+clean: 15
+tidy: 20
+organize: 25
+wash: 15
+vacuum: 20
+sweep: 10
+mop: 20
+
+# ----- Computer / Technical Tasks -------------------------------------
+code: 45
+develop: 50
+debug: 40
+fix bug: 40
+update: 20
+configure: 25
+install: 30
+review code: 35
+document: 30
+
+# ----- Communication & Admin Tasks ------------------------------------
+call: 10
+phone: 10
+email: 8
+write email: 10
