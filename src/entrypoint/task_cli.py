@@ -3,14 +3,15 @@ from rich import print
 
 tasks_app = typer.Typer(help="Task-related commands")
 
-@tasks_app.command("list-toschedule")
-def list_tasks(label: str = typer.Option("Agendar", help="Filter task list by label")):
+@tasks_app.command("list-expired")
+def list_tasks():
     from client.todoist_client import TodoistClient
 
     client = TodoistClient()
-    tasks = client.get_tasks(label=label)
+    tasks = client.get_expired_tasks()
 
-    print(f"[bold cyan]Showing tasks[/bold cyan]\n\n{client.tasks_totable(tasks)}")
+
+    print(f"[bold cyan]Showing expired tasks[/bold cyan]\n{client.tasks_totable(tasks)}")
     
   
 @tasks_app.command("estimate")
