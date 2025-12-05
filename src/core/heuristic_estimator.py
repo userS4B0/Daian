@@ -3,7 +3,7 @@ import re
 
 from typing import Any, Dict, List, Tuple
 
-from src.utils.keyword_loader import load_keywords
+from utils.keyword_loader import load_keywords
 
 from config.log.logger import setup_logger
 
