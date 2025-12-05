@@ -212,3 +212,4 @@ google_credentials.json
 google_token.json
 
 data/task_duration_history.json
+src/data/keywords.yml
