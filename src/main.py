@@ -2,6 +2,7 @@ import sys
 
 from core.scheduler import Scheduler
 from core.planner import Planner
+from core.duration_engine import DurationEngine
 
 from client.todoist_client import TodoistClient
 from client.gcal_client import GCalClient
@@ -47,6 +48,33 @@ def main():
     # # Add expired tasks to re-scheduler query
     # planner.add_to_nonscheduled_queue(expired_tasks)
     # logger.info("New tasks added to re-schedule queue")
+
+    print("\n=== DurationEngine Proof of Concept ===\n")
+
+    duration_engine = DurationEngine()  # usa el .timeflow_history.json por defecto
+
+    # Dummy task para pruebas iniciales
+    task = {
+        "content": "Write monthly financial report",
+        "description": "Review KPIs, gather data, prepare charts and summary",
+        "priority": 3,
+        "labels": ["deepwork"],
+    }
+
+    for task in nonscheduled_tasks:
+        result = duration_engine.estimate(task)
+        print(f"\nEstimated duration for task: {task.content}")
+        print(result)
+
+        # Prueba registrar duración real
+        print("\nRegistering actual duration...")
+        duration_engine.register_actual(task, actual_minutes=95)
+
+        # Recalcular tras registrar histórico
+        result2 = duration_engine.estimate(task)
+
+        print(f"\nEstimated duration after updating history for task: {task.content}")
+        print(result2)
     
     # ----- Google Calendar Client -----------------------------------------
     gcal_client = GCalClient()
