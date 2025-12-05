@@ -1,0 +1,21 @@
+# Format:
+# Keyword -> Estimated Duration Minutes
+
+enviar email: 10
+responder: 8
+pedir: 8
+llamar: 30
+reunion: 60
+leer: 20
+revisar: 45
+escribir: 60
+documento: 60
+estudiar: 90
+investigar: 90
+setup: 120
+configurar: 90
+probar: 45
+desplegar: 60
+arreglar: 45
+diseñar: 90
+planear: 45

@@ -1,65 +1,136 @@
+# src/core/heuristic_estimator.py
 import re
 
+from typing import Any, Dict, List, Tuple
 
-DEFAULT_KEYWORDS = {
-    # keyword -> base minutes
-    "enviar email": 10,
-    "responder": 8,
-    "pedir": 8,
-    "llamar": 30,
-    "reunion": 60,
-    "leer": 20,
-    "revisar": 45,
-    "escribir": 60,
-    "documento": 60,
-    "estudiar": 90,
-    "investigar": 90,
-    "setup": 120,
-    "configurar": 90,
-    "probar": 45,
-    "desplegar": 60,
-    "arreglar": 45,
-    "diseñar": 90,
-    "planear": 45,
-}
+from src.utils.keyword_loader import load_keywords
+
+from config.log.logger import setup_logger
+
 
 WORD_COUNT_THRESHOLD = 12
 WORD_COUNT_BONUS = 15
 
+logger = setup_logger(__name__)
+
 
 class HeuristicEstimator:
-    def __init__(self, keyword_table: dict[str, int] = None):
-        self.keywords = keyword_table or DEFAULT_KEYWORDS
+    """
+    Heuristic estimator based on a keyword → minutes mapping.
+    Includes contextual logging for debugging, observability, and auditing.
+    """
 
-    def _text_scores(self, text: str):
-        text_l = (text or "").lower()
-        score = 0
+    def __init__(self, keyword_table: Dict[str, int] | None = None):
+        logger.debug("Initializing HeuristicEstimator...")
+
+        try:
+            self.keywords: Dict[str, int] = keyword_table or load_keywords() or {}
+        except Exception as e:
+            logger.error(f"Failed to load keywords from YAML: {e}")
+            raise
+
+        if not self.keywords:
+            logger.error(
+                "Keyword table is empty — heuristic estimation will be ineffective."
+            )
+
+        logger.info(f"Loaded {len(self.keywords)} heuristic keywords.")
+
+        # Compile pattern
+        try:
+            keys_sorted = sorted(self.keywords.keys(), key=len, reverse=True)
+            if keys_sorted:
+                pattern = r"\b(" + "|".join(map(re.escape, keys_sorted)) + r")\b"
+                self._pattern = re.compile(pattern, flags=re.IGNORECASE)
+                logger.debug(f"Compiled keyword regex with {len(keys_sorted)} entries.")
+            else:
+                self._pattern = re.compile(r"(?!x)x")
+                logger.warning("No keywords found — compiled a dummy regex.")
+
+        except Exception as e:
+            logger.error(f"Regex compilation failed: {e}")
+            raise
+
+    # -------------------------------------------------------------------------
+    def _text_scores(self, text: str) -> Tuple[int, List[str], int]:
+        logger.debug("Starting heuristic text scoring...")
+
+        text = (text or "").strip().lower()
+        if not text:
+            logger.warning("Received empty text for scoring.")
+
+        wc = len(text.split())
+        logger.debug(f"Word count: {wc}")
+
+        # Match keywords
+        try:
+            matches_raw = self._pattern.findall(text)
+        except Exception as e:
+            logger.error(f"Regex error while matching text: {e}")
+            matches_raw = []
+
         matches = []
-        for kw, minutes in self.keywords.items():
-            # word boundary match
-            if re.search(rf"\\b{re.escape(kw)}\\b", text_l):
-                score = max(score, minutes)
-                matches.append(kw)
-        # word count heuristic
-        wc = len((text or "").split())
-        if wc >= WORD_COUNT_THRESHOLD:
-            score += WORD_COUNT_BONUS
-        return score, matches, wc
+        for m in matches_raw:
+            ml = m.lower()
+            if ml not in matches:
+                matches.append(ml)
 
-    def estimate(self, task: object) -> dict[str, any]:
+        logger.debug(f"Matched keywords: {matches}")
+
+        # Scoring strategy — keeping current MAX model
+        if matches:
+            score_kw = max(self.keywords.get(m, 0) for m in matches)
+            logger.debug(f"Keyword-derived score (max strategy): {score_kw}")
+        else:
+            logger.info("No heuristic keywords matched in text.")
+            score_kw = 0
+
+        # Word-count bonus
+        if wc >= WORD_COUNT_THRESHOLD:
+            logger.info(
+                f"Applying word count bonus ({WORD_COUNT_BONUS}) due to long task text."
+            )
+            score_kw += WORD_COUNT_BONUS
+
+        logger.debug(f"Final score after heuristics: {score_kw}")
+
+        return int(score_kw), matches, wc
+
+    # -------------------------------------------------------------------------
+    def estimate(self, task: object) -> Dict[str, Any]:
         """
-        Returns: { 'estimated_minutes': int, 'reason': str, 'matches': list, 'word_count': int}
+        Returns structured heuristic estimation for a task.
+        Logging includes context-aware information when possible.
         """
-        content = task.content or ""
-        description = task.description or ""
-        text_combined = f"{content} {description}".lower().strip()
+
+        ctx = f"(task_id={task.id})" if task.id else ""
+
+        logger.info(f"Running heuristic estimation {ctx}...")
+
+        # Extract text sources
+        if isinstance(task, dict):
+            content = task.content or ""
+            description = task.description or ""
+        else:
+            content = getattr(task, "content", "") or ""
+            description = getattr(task, "description", "") or ""
+
+        if not content and not description:
+            logger.warning(f"No content/description found {ctx}. Returning no_match=0.")
+
+        text_combined = f"{content} {description}".strip()
+        logger.debug(f"Combined text for heuristic evaluation {ctx}: {text_combined}")
 
         score, matches, wc = self._text_scores(text_combined)
 
-        # If no match, return 0 so higher-level engine can fallback
+        reason = "heuristic" if score > 0 else "no_match"
+        logger.info(
+            f"Heuristic estimation completed {ctx} → score={score}, reason={reason}"
+        )
+
         return {
-            "estimated_minutes": int(score),
-            "reason": "heuristic" if score > 0 else "no_match",
+            "estimated_minutes": score,
+            "reason": reason,
             "matches": matches,
             "word_count": wc,
         }
