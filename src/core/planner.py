@@ -8,7 +8,7 @@ logger = setup_logger(__name__)
 # FEATURE: Implement basic google calendar event functions
 # Implement rearranging Google Calendar Events
 # assignees: userS4B0
-# labels: priority_medium, core, controller_side
+# labels: priority_medium, core, controller_side, feature
 # milestone: v1.0.0
 class Planner:
     """
