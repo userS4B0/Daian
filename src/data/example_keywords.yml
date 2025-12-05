@@ -3,10 +3,6 @@
 #  Each keyword provides a baseline duration estimate (in minutes)
 # ===================================================================
 
-metadata:
-  version: 1
-  description: "Initial keyword table for heuristic task duration estimation"
-
 keywords:
 
   # ----- Household & Maintenance Tasks ----------------------------------
