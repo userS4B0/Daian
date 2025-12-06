@@ -75,28 +75,7 @@ For details, see the full [[LICENSE]] file in this repository.
 
 ---
 
-## 🗺️ Roadmap (Initial Phase)
-
-### **Phase 1 — Core MVP**
-- [X] Implement Todoist API client  
-- [X] Implement Google Calendar API integration  
-- [>] Define rule-based task duration engine  
-- [>] Build availability scanner  
-- [X] Build scheduling logic (basic fit algorithm)  
-- [ ] Create CLI entrypoint    
-
-### **Phase 2 — Automation Layer**
-- [!] Add cron/Docker execution support  
-- [!] Improve logging and error handling  
-- [!] Create "dry-run" preview mode  
-- [!] Add configuration YAML  
-
-### **Phase 3 — Intelligence Upgrade (Future)**
-- [!] LLM-based task duration estimation  
-- [!] Natural language complexity classifier  
-- [!] AI-generated daily planning suggestions  
-- [!] Focus-mode time blocking engine  
-- [!] Dashboard or web UI (FastAPI)  
+![[docs/Roadmap.md]]
 
 ---
 
