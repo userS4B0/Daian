@@ -35,14 +35,12 @@ def list_nonscheduled():
 
 @tasks_app.command("estimate", help="Estimates task completion time.")
 def estimate_task(task_id: str):
-    from client.todoist_client import TodoistClient
     from core.heuristic_estimator import HeuristicEstimator
 
     todoist_client = TodoistClient()
     task = todoist_client.get_task(task_id)
 
     estimator = HeuristicEstimator()
-    result = estimator.estimate(task)
+    estimation_result = estimator.estimate(task)
 
-    print("\n[bold green]Estimation result:[/bold green]")
-    print(result)
+    print(f"\n[bold green]Estimation result:[/bold green]\n{estimator.estimation_totable(estimation_result)}")
