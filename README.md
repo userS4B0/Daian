@@ -75,7 +75,7 @@ For details, see the full [[LICENSE]] file in this repository.
 
 ---
 
-![[docs/Roadmap.md]]
+[Roadmap](docs/Roadmap.md)
 
 ---
 
