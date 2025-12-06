@@ -7,3 +7,5 @@ google-api-python-client==2.129.0
 google-auth==2.33.0
 google-auth-oauthlib==1.2.1
 PyYAML==6.0.3
+typer==0.20.0
+rich==14.2.0

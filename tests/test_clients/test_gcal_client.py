@@ -104,7 +104,7 @@ def test_sort_events_by_date():
 # due to credential path initialization and the implicit
 # dependency on authentication. They pass locally.
 # assignees: userS4B0
-# labels: priority_high, cicd
+# labels: priority_high, cicd, bug
 # milestone: v1.0.0
 
 # ----------------- Tests for get_numberof_events -----------------

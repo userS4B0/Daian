@@ -44,7 +44,7 @@ def normalize_datetime(dt_str: str):
             return dt.astimezone(ZoneInfo(FALLBACK_TZ))
         except Exception:
             logger.warning(
-                "FALLBACK_TZ variable not found on .env, falling back to native datetime"
+                "FALLBACK_TZ variable not defined on config, falling back to native datetime"
             )
 
             # If all fails, return naive datetime

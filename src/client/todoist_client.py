@@ -4,6 +4,7 @@ from tabulate import tabulate
 from utils.time_utils import normalize_datetime, is_expired_by_days
 
 from config.app_settings import TODOIST_API_TOKEN, DEF_TABLE_FMT
+from config.user_settings import NONSCHEDULED_TASKS_LABEL
 from config.log.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -13,7 +14,7 @@ logger = setup_logger(__name__)
 # Issue URL: https://github.com/userS4B0/my-daily-planner/issues/8
 # Ensure minimizing API request by defining local cache
 # assignees: userS4B0
-# labels: priority_low, todoist, model_side
+# labels: priority_low, todoist, model_side, feature
 # milestone: v1.0.1
 class TodoistClient(TodoistAPI):
     """
@@ -24,7 +25,7 @@ class TodoistClient(TodoistAPI):
     # Issue URL: https://github.com/userS4B0/my-daily-planner/issues/6
     # Handle program errors when connection to todoist API fails
     # assignees: userS4B0
-    # labels: priority_medium, todoist, model_side
+    # labels: priority_medium, todoist, model_side, bug
     # milestone: v1.0.0
 
     # ----- Main Constructor -----------------------------------------------
@@ -60,6 +61,33 @@ class TodoistClient(TodoistAPI):
 
         return expired_tasks
 
+    # ----- Retrieve nonshceduled tasks ------------------------------------
+    def get_nonscheduled_tasks(self) -> list[object]:
+        """
+        Return tasks to re-schedule (Tasks with label "NONSCHEDULED_TASKS_LABEL").
+
+        Returns:
+            list[object]: List of nonscheduled tasks
+        """
+
+        return self.get_tasks(label=NONSCHEDULED_TASKS_LABEL)
+
+    # ----- Retrieve nonshceduled tasks ------------------------------------
+    def get_all_tasks(self, limit: int = 10) -> list[object]:
+        """
+        Return all tasks & trim task list by limit.
+
+        Args:
+            limit[int]: limits how many tasks it retrieves.
+        Returns:
+            list[object]: List of nonscheduled tasks
+        """
+        all_tasks = self.get_tasks()
+
+        if limit:
+            return all_tasks[:limit]
+        
+        return all_tasks
 
     # ----- Build task table -----------------------------------------------
     @staticmethod
@@ -93,18 +121,17 @@ class TodoistClient(TodoistAPI):
 
                 tasks_table.append(
                     [
+                        task.id,
                         task.priority,
                         task.content,
-                        task.description,
                         task.labels,
                         formatted_due,
-                        "Yes" if task.is_completed else "No",
                     ]
                 )
 
             except Exception as e:
                 logger.error(f"Failed to process task: {e}")
 
-        headers = ["Priority", "Task", "Description", "Labels", "Due Date", "Completed"]
+        headers = ["ID", "Priority", "Task", "Labels", "Due Date"]
 
         return tabulate(tasks_table, headers=headers, tablefmt=DEF_TABLE_FMT)
