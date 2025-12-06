@@ -2,9 +2,11 @@
 import re
 
 from typing import Any, Dict, List, Tuple
+from tabulate import tabulate
 
 from utils.keyword_loader import load_keywords
 
+from config.app_settings import DEF_TABLE_FMT
 from config.log.logger import setup_logger
 
 
@@ -118,7 +120,7 @@ class HeuristicEstimator:
         if not content and not description:
             logger.warning(f"No content/description found {ctx}. Returning no_match=0.")
 
-        text_combined = f"{content} {description}".strip()
+        text_combined = f"{content} {description}".strip().lower()
         logger.debug(f"Combined text for heuristic evaluation {ctx}: {text_combined}")
 
         score, matches, wc = self._text_scores(text_combined)
@@ -129,8 +131,21 @@ class HeuristicEstimator:
         )
 
         return {
-            "estimated_minutes": score,
+            "estimated_mins": score,
             "reason": reason,
             "matches": matches,
             "word_count": wc,
         }
+
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def estimation_totable(estimation_result: Dict[str, Any]) -> str:
+        """
+        Returns structured heuristic estimation for a task formatted as a tabulate table.
+        """
+        
+        # Convert to list of rows: [(key, value), ...]
+        rows = [(k, v) for k, v in estimation_result.items()]
+        headers = ["Field", "Value"]
+
+        return tabulate(rows, headers=headers, tablefmt=DEF_TABLE_FMT)
