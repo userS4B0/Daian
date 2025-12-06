@@ -26,11 +26,10 @@ This project is intentionally built for **expansion**, including future integrat
 
 ## Table of Contents
 
-- [Overview](#-overview)
 - [Roadmap](#️-roadmap)
 - [Key Features](#-key-features)
 - [High-Level Workflow](#-high-level-workflow)
-- [Installation](#-installation)
+- [Installation](#️-installation)
 - [Usage](#-usage)
 - [License](#-license)
 - [Ethical Use Guidelines](#-ethical-use-guidelines)
