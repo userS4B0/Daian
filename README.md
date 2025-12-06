@@ -1,7 +1,6 @@
 # Daian – Digital Assistant for Intelligent Agenda & Notifications
 
 ![Status](https://img.shields.io/badge/status-in_development-yellow)
-![License](https://img.shields.io/badge/license-MIT-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-green)
 
 [![Unit Tests](https://github.com/userS4B0/my-daily-planner/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/userS4B0/my-daily-planner/actions/workflows/unit_tests.yml)
