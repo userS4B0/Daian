@@ -3,7 +3,7 @@ name: "TODO to Issue"
 # Triggers
 on:
   push:
-    branches: [main]
+    branches: [dev]
 
 jobs:
   build:
