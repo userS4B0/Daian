@@ -1,0 +1,114 @@
+classDiagram
+    direction TB
+    class Daian {
+        > app()
+    }
+
+    class calendar_cli {
+        > show_all_events(limit)
+        > show_thisweek_events()
+        > show_avaliability()
+    }
+
+    class task_cli {
+        > list_all(limit)
+        > list_expired()
+        > list_nonshceduled()
+        > estimate_task()
+        > append_nonschedule()
+    }
+
+    class TodoistClient {
+      > get_expired_tasks()
+      > get_nonscheduled_tasks()
+      > get_all_tasks(limit)
+      > tasks_totable(tasks)
+    }
+
+    class GcalClient {
+      > _authenticate()
+      > get_numberof_events()
+      > get_thisweek_events(limit)
+      > events_totable(events)
+      > sort_events()
+    }
+
+    class GcalClient {
+      > _authenticate()
+      > get_numberof_events()
+      > get_thisweek_events(limit)
+      > events_totable(events)
+      > sort_events()
+    }
+
+    class Scheduler {
+        > get_free_slots(events, week_start, week_end)
+        > free_slots_totable(free_slots)
+    }
+
+    class Planner {
+        > remove_task_duedate(tasks)
+        > apply_label_to_tasks(tasks)
+        > add_to_nonscheduled_queue(tasks)
+        > estimate_duration(task)
+    }
+    
+    class DurationEngine {
+        > baseline_estimate (task)
+        > estimate(task)
+        > register_actual (task, actual_minutes)
+    }
+
+    class Logger {
+        > setup_logger(logger_name)
+    }
+
+    class time_utils {
+        > normalize_datetime(dt_str)
+        > get_current_week()
+        > get_today()
+        > is_expired_by_days(due_date_str, days)
+    }
+
+    class keyword_loader {
+        > load_keywords()
+    }
+
+    Daian --> calendar_cli : uses
+    Daian --> task_cli : uses
+
+    calendar_cli --> GcalClient : uses
+    calendar_cli --> Scheduler : uses
+    calendar_cli --> user_settings : feeds on
+
+    task_cli --> TodoistClient : uses
+    task_cli --> Planner : uses
+
+    GcalClient <-- app_settings : feeds on
+    GcalClient --> Logger: implements
+
+    TodoistClient <-- app_settings : feeds on
+    TodoistClient <-- user_settings : feeds on
+    TodoistClient --> time_utils : uses
+    TodoistClient --> Logger: implements
+
+    Scheduler --> time_utils : uses
+    Scheduler <-- app_settings : feeds on
+    Scheduler --> Logger : implements
+
+    Planner --> DurationEngine : implements
+    Planner --> Logger : implements
+    Planner <-- user_settings : feeds on
+
+    DurationEngine --> HeuristicEstimator : implements
+    DurationEngine --> HistoryStore : uses
+
+    HeuristicEstimator <-- app_settings: feeds on
+    HeuristicEstimator --> Logger: implements
+    HeuristicEstimator --> keyword_loader: uses
+
+    HistoryStore <-- app_settings: feeds on
+
+    keyword_loader --> Logger: implements
+    time_utils <-- user_settings: feeds on
+    time_utils --> Logger: implements

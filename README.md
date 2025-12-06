@@ -41,7 +41,7 @@ This project is intentionally built for **expansion**, including future integrat
 
 ## 🧩 High-Level Workflow
 
-Check [Project Diagram](docs/ProjectDiagram.md) for full view on main flows.
+Check [Project Diagram](docs/ProjectDiagram.mmd) for full view on main flows (You need to use [Mermaid](https://www.mermaidchart.com) for full diagram view).
 
 1. **Ingest**  
    - Fetch unplanned tasks from Todoist  
