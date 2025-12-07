@@ -9,9 +9,9 @@
 > - [X] Create CLI entrypoint    
 
 ### **Phase 2 — Basic Upgrades**
-> - [ ] Improve logging and error handling  
+> - [X] Improve logging and error handling  
 > - [ ] Create "dry-run" preview mode  
-> - [ ] Add configuration YAML support
+> - [X] Add configuration YAML support
 
 ### **Phase 3 — Automation Layer**
 > - [ ] Add cron/Docker execution support    
