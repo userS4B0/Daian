@@ -43,6 +43,10 @@ This project is intentionally built for **expansion**, including future integrat
 
 ---
 
+## [Changelog](docs/CHANGELOG.md)
+
+---
+
 ## ✨ Key Features
 
 - 🔍 **Todoist task ingestion** (filters, labels, priorities)  
