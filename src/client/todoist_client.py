@@ -4,16 +4,13 @@ from tabulate import tabulate
 
 from utils.time_utils import normalize_datetime, is_expired_by_days
 
-from config.app_settings import TODOIST_API_TOKEN, DEF_TABLE_FMT
-from config.user_settings import NONSCHEDULED_TASKS_LABEL
-
 from config.config_loader import ConfigLoader
 from config.log.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 config = ConfigLoader._deep_merge(
-    ConfigLoader.load("user_settings"), ConfigLoader.load("app_settings")
+    ConfigLoader.load("app_settings"), ConfigLoader.load("user_settings")
 )
 
 
@@ -36,7 +33,7 @@ class TodoistClient(TodoistAPI):
         logger.debug("Initializing TodoistClient instance...")
 
         todoist_api_token = config.get("todoist", {}).get("api_token", {})
-
+        
         if not todoist_api_token:
             logger.error("Todoist API Token not set in configuration")
 
