@@ -9,14 +9,13 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from utils.time_utils import get_current_week, normalize_datetime
-
-from config.app_settings import (
-    GOOGLE_CREDENTIALS_PATH,
-    GOOGLE_TOKEN_PATH,
-    DEF_TABLE_FMT,
-)
+from config.config_loader import ConfigLoader
 
 from config.log.logger import setup_logger
+
+config = ConfigLoader._deep_merge(
+    ConfigLoader.load("app_settings"), ConfigLoader.load("user_settings")
+)
 
 logger = setup_logger(__name__)
 
@@ -30,27 +29,37 @@ class GCalClient:
     """
 
     # ----- Main Constructor -----------------------------------------------
-    def __init__(self, creds_path: str | None = None, token_path: str | None = None):
+    def __init__(self):
         """Path initialization, credential containerization and authentication."""
 
-        raw_creds_path = creds_path or GOOGLE_CREDENTIALS_PATH
-        raw_token_path = token_path or GOOGLE_TOKEN_PATH
+        logger.debug("Initializing GcalClient instance...")
 
-        # Validación segura antes de crear pathlib.Path
-        if not raw_creds_path:
-            raise ValueError("GOOGLE_CREDENTIALS_PATH is not set.")
-        if not raw_token_path:
-            raise ValueError("GOOGLE_TOKEN_PATH is not set.")
+        GOOGLE_CREDENTIALS_PATH = config.get("google", {}).get("credentials_path", {})
+        GOOGLE_TOKEN_PATH = config.get("google", {}).get("token_path", {})
 
-        # Ahora sí es seguro hacer esto:
-        self.creds_path = pathlib.Path(raw_creds_path)
-        self.token_path = pathlib.Path(raw_token_path)
+        if not GOOGLE_CREDENTIALS_PATH:
+            logger.error("google_credentials_path not found in config.")
+            raise ValueError("google_credentials_path not found in config.")
 
-        self.creds = None
+        if not GOOGLE_TOKEN_PATH:
+            logger.error("google_token_path not found in config.")
+            raise ValueError("google_token_path not found in config.")
+
+        self.creds_path = pathlib.Path(GOOGLE_CREDENTIALS_PATH)
+        self.token_path = pathlib.Path(GOOGLE_TOKEN_PATH)
+
+        self.credentials = None
         self.service = None
 
-        # Dejamos _authenticate para más tarde o lo permitimos mockear en tests
-        self._authenticate()
+        logger.debug("Attempting Google Oauth...")
+
+        try:
+            self._authenticate()
+            logger.info("Daian successfuly authenticated to Google Calendar API")
+
+        except Exception as e:
+            logger.error(f"Google Authentication failed: {e}")
+            raise RuntimeError("Unable to authenticate to Google Calendar") from e
 
         logger.debug("GCalClient initialized")
 
@@ -61,28 +70,32 @@ class GCalClient:
         """
 
         # Load existing token if it's present
-        logger.debug("Attempting to fetch google token file")
+        logger.debug("Attempting to fetch google token file...")
+
         if self.token_path.exists():
-            self.creds = Credentials.from_authorized_user_file(
+            self.credentials = Credentials.from_authorized_user_file(
                 str(self.token_path), SCOPES
             )
 
         # If token isn't present, executes full authentication flow
         logger.debug("Google Token not found, executing full authentication flow")
-        if not self.creds or not self.creds.valid:
+
+        if not self.credentialss or not self.credentials.valid:
             flow = InstalledAppFlow.from_client_secrets_file(
                 str(self.creds_path), SCOPES
             )
-            self.creds = flow.run_local_server(port=0)
+            self.credentials = flow.run_local_server(port=0)
 
             # Save new token
             logger.debug("Google Token generated & saved")
+
             with open(self.token_path, "w") as token:
-                token.write(self.creds.to_json())
+                token.write(self.credentials.to_json())
 
         # Build Google Calendar API Client
-        logger.debug("Building Google Calendar API")
-        self.service = build("calendar", "v3", credentials=self.creds)
+        logger.debug("Building Google Calendar API...")
+
+        self.service = build("calendar", "v3", credentials=self.credentials)
 
     # ----- List specific number of events ---------------------------------
     def get_numberof_events(
@@ -186,15 +199,18 @@ class GCalClient:
         Returns:
             str: formatted tabulate string table with all Google Calendar events
         """
-        logger.info("Preparing events table for display")
+        table_fmt = config.get("app", {}).get("display", {}).get("table_fmt", {})
+        events_table = []
+
+        if not table_fmt:
+            logger.warning("table_fmt not set in configuration")
+            table_fmt = "rounded_outline"
 
         if not events:
             logger.warning("No events found!")
             return
 
-        events_table = []
         # Build table rows
-
         for event in events:
             logger.debug("Processing event entry")
 
@@ -212,13 +228,12 @@ class GCalClient:
 
             events_table.append([title, start_fmt, end_fmt])
 
-        # Print table with headers
-        logger.debug("Rendering event table for console output")
+        headers = ["Title", "Start time", "End Time"]
 
         return tabulate(
             events_table,
-            headers=["Title", "Start time", "End time"],
-            tablefmt=DEF_TABLE_FMT,
+            headers=headers,
+            tablefmt=table_fmt,
         )
 
     # ----- Sort Events ----------------------------------------------------
