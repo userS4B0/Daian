@@ -33,7 +33,7 @@ class TodoistClient(TodoistAPI):
         logger.debug("Initializing TodoistClient instance...")
 
         todoist_api_token = config.get("todoist", {}).get("api_token", {})
-        
+
         if not todoist_api_token:
             logger.error("Todoist API Token not set in configuration")
 
@@ -41,13 +41,13 @@ class TodoistClient(TodoistAPI):
 
         try:
             super().__init__(todoist_api_token)
-            logger.info("Daian succesfully authenticated to Todoist API")
+            logger.info("Daian succesfuly authenticated to Todoist API")
 
         except Exception as e:
             logger.error(f"Todoist authentication failed: {e}")
             raise RuntimeError("Unable to authenticate to Todoist API") from e
 
-        logger.debug("TodoistClient initialized...")
+        logger.debug("TodoistClient initialized")
 
     # ----- Get tasks wrapper ----------------------------------------------
     def get_tasks_wrapper(self, **kwargs):
@@ -62,7 +62,7 @@ class TodoistClient(TodoistAPI):
                 logger.error("Unauthorized: check your Todoist API token")
             else:
                 logger.error(f"Todoist API error: {e}")
-                
+
             return []
 
     # ----- Retrieve expired tasks -----------------------------------------
