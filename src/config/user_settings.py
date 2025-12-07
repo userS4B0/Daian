@@ -28,8 +28,8 @@ NONSCHEDULED_TASKS_LABEL = "Agendar"
 # ----- Fallback TimeZone ----------------------------------------------
 # BUG: Fix error variable not loading properly
 # DEF_TZ & FALLBACK_TZ aren't loading properly on execution time
-    # assignees: userS4B0
-    # labels: priority_high, core, bug
-    # milestone: v1.0.0
+# assignees: userS4B0
+# labels: priority_high, core, bug
+# milestone: v1.0.0
 
 FALLBACK_TZ = "UTC"
