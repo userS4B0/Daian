@@ -11,7 +11,7 @@ logger = setup_logger(__name__)
 _KEYWORDS_CACHE = None
 
 
-def load_keywords() -> Dict:
+def yaml_load_keywords() -> Dict:
     """Load keyword → weight mapping from data/keywords.yml."""
 
     global _KEYWORDS_CACHE
