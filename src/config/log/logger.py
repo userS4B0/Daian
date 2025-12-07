@@ -27,18 +27,20 @@ def setup_logger(logger_name: str) -> object:
         backupCount=5,
         encoding="utf-8",
     )
+    # file_handler.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
 
     # Optional Debug console
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
-    # console_handler.setLevel(logging.WARNING)
     console_handler.setFormatter(formatter)
 
     # Register Handlers
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
+
+    if not logger.hasHandlers():
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
 
     # Handles duplication
     logger.propagate = False

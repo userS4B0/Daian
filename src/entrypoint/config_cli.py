@@ -29,8 +29,8 @@ def check_config():
     """
 
     merged = ConfigLoader._deep_merge(
-        ConfigLoader.load("app_settings"),
         ConfigLoader.load("user_settings"),
+        ConfigLoader.load("app_settings"),
     )
 
     print("[bold yellow]Validating configuration...[/bold yellow]")
@@ -41,8 +41,9 @@ def check_config():
     else:
         print("[bold red]✖ Problems found in configuration[/bold red]")
 
+
 # FEATURE: Implement config initialization from cli entrypoint
-# Implement function `daian config init` to generate default config in `~/.config/daian/user_config.yml` 
+# Implement function `daian config init` to generate default config in `~/.config/daian/user_config.yml`
 # assignees: userS4B0
 # labels: priority_low, core, feature
 # milestone: v1.0.0
