@@ -3,13 +3,11 @@ import logging.handlers
 
 from pathlib import Path
 
-# ----------------------------------------------------------------------
-# Logger Variables
-# ----------------------------------------------------------------------
+# ----- Logger Variables -----------------------------------------------
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 
-LOG_FILE = LOG_DIR / "mydailyplanner.log"
+LOG_FILE = LOG_DIR / "daian.log"
 
 
 def setup_logger(logger_name: str) -> object:
@@ -34,7 +32,8 @@ def setup_logger(logger_name: str) -> object:
 
     # Optional Debug console
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.WARNING)  # no ensucia tu CLI
+    console_handler.setLevel(logging.DEBUG)
+    # console_handler.setLevel(logging.WARNING)
     console_handler.setFormatter(formatter)
 
     # Register Handlers
