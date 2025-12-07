@@ -13,13 +13,10 @@ def show_config():
     """
     Show merged configuration as DAIAN sees it.
     """
-    conf_app = ConfigLoader.load("app_settings")
-    conf_user = ConfigLoader.load("user_settings")
-
-    merged = ConfigLoader._deep_merge(conf_app, conf_user)
+    full_config = ConfigLoader.load_all()
 
     print("[bold cyan]DAIAN Loaded Configuration:[/bold cyan]")
-    print(Pretty(merged))
+    print(Pretty(full_config))
 
 
 @config_app.command("check")
@@ -28,19 +25,15 @@ def check_config():
     Validate configuration correctness.
     """
 
-    merged = ConfigLoader._deep_merge(
-        ConfigLoader.load("user_settings"),
-        ConfigLoader.load("app_settings"),
-    )
-
+    full_config = ConfigLoader.load_all()
     print("[bold yellow]Validating configuration...[/bold yellow]")
-    ok = ConfigValidator.validate(merged)
+    
+    ok = ConfigValidator.validate(full_config)
 
     if ok:
         print("[bold green]✔ Config OK[/bold green]")
     else:
         print("[bold red]✖ Problems found in configuration[/bold red]")
-
 
 # FEATURE: Implement config initialization from cli entrypoint
 # Implement function `daian config init` to generate default config in `~/.config/daian/user_config.yml`

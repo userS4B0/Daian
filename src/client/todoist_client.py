@@ -9,10 +9,7 @@ from config.log.logger import setup_logger
 
 logger = setup_logger(__name__)
 
-config = ConfigLoader._deep_merge(
-    ConfigLoader.load("app_settings"), ConfigLoader.load("user_settings")
-)
-
+config = ConfigLoader.load_and_validate()
 
 # FEATURE: Implement task retrieving cache
 # Issue URL: https://github.com/userS4B0/my-daily-planner/issues/8

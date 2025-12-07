@@ -9,6 +9,9 @@ class ConfigValidator:
     REQUIRED_USER_FIELDS = [
         "todoist",
         "todoist.api_token",
+        "google",
+        "google.token_path",
+        "google.credentials_path"
     ]
 
     @staticmethod

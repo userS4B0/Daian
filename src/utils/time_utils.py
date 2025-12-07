@@ -1,11 +1,15 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from config.user_settings import DEF_TZ, FALLBACK_TZ
-
 from config.log.logger import setup_logger
+from config.config_loader import ConfigLoader
+
+config = ConfigLoader.load_and_validate()
 
 logger = setup_logger(__name__)
+
+DEF_TZ = config.get("app", {}).get("timezone", {}).get("default", {})
+FALLBACK_TZ = config.get("app", {}).get("timezone", {}).get("fallback", {})
 
 
 # ----- Format Date Time -----------------------------------------------

@@ -3,6 +3,7 @@ from __future__ import annotations
 import pathlib
 
 from tabulate import tabulate
+from typing import List, Dict
 
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -13,9 +14,7 @@ from config.config_loader import ConfigLoader
 
 from config.log.logger import setup_logger
 
-config = ConfigLoader._deep_merge(
-    ConfigLoader.load("app_settings"), ConfigLoader.load("user_settings")
-)
+config = ConfigLoader.load_and_validate()
 
 logger = setup_logger(__name__)
 
@@ -97,26 +96,41 @@ class GCalClient:
         self.service = build("calendar", "v3", credentials=self.credentials)
 
     # ----- List specific number of events ---------------------------------
-    def get_numberof_events(
-        self, calendar_ids: list[str], max_results: int = 10
-    ) -> list[dict]:
+    def get_numberof_events(self, max_results: int = 10) -> List[Dict]:
         """
-        Returns a list of a desired number (defaults 10 events) of events from different calendars.
-
-        Args:
-            calendar_ids (list[str]): List of calendar IDs to fetch events from.
-            max_results (int): Max number of events to retrieve.
+        Retrieves a number of events (default: 10) from all Google Calendars
+        defined in the configuration under google.calendars.
 
         Returns:
-            list[dict]: Event list (dict) retrieved from API.
+            list[dict]: Combined list of events with calendar metadata.
         """
+
+        logger.debug("Fetching calendar list from configuration...")
+
+        # Load full google settings (expects google.calendars)
+        google_calendars = config.get("google", {}).get("calendars", [])
+
+        if not google_calendars:
+            logger.error("No calendars found in configuration under google.calendars")
+            return []
+
         retrieved_events = []
 
-        for calendar_id in calendar_ids:
-            try:
-                logger.debug("Processing calendar events")
+        for calendar in google_calendars:
+            calendar_id = calendar.get("id")
+            calendar_role = calendar.get("role", "unknown")
 
-                fetched_events = (
+            if not calendar_id:
+                logger.warning(f"Skipping calendar with missing ID: {calendar.get("name")}")
+                continue
+
+            try:
+                logger.debug(
+                    f"Fetching up to {max_results} events from calendar '{calendar_id}' "
+                    f"(role: {calendar_role})"
+                )
+
+                fetched = (
                     self.service.events()
                     .list(
                         calendarId=calendar_id,
@@ -126,41 +140,61 @@ class GCalClient:
                     )
                     .execute()
                 )
-                events = fetched_events.get("items", [])
 
-                # Adds Calendar ID to every event for references
+                events = fetched.get("items", [])
+
+                # Add metadata to each event
                 for event in events:
                     event["_calendar_id"] = calendar_id
+                    event["_calendar_role"] = calendar_role
 
-                # Add events to the combined list
                 retrieved_events.extend(events)
 
             except Exception as e:
-                logger.error(f"Failed to process calendar: {e}")
+                logger.error(f"Failed to fetch events from {calendar_id}: {e}")
 
         return self.sort_events_by_date(retrieved_events)
 
     # ----- List this week's events ----------------------------------------
-    def get_thisweek_events(self, calendar_ids: list[str]) -> list[dict]:
+    def get_thisweek_events(self) -> List[Dict]:
         """
-        Retrieve all events from the current week across multiple calendars.
-
-        Args:
-            calendar_ids (list[str]): List of calendar IDs to fetch events from.
+        Retrieve all events from the current week across all calendars
+        defined in google.calendars from the configuration.
 
         Returns:
             list[dict]: Combined list of all events from the current week.
         """
-        retrieved_events = []
 
-        # Get ISO 8601 start and end of current week
+        logger.debug("Fetching calendar list from configuration for weekly events")
+
+        # Load full google settings (expects google.calendars)
+        google_calendars = config.get("google", {}).get("calendars", [])
+
+        if not google_calendars:
+            logger.error("No calendars found in configuration under google.calendars")
+            return []
+
+        # Get ISO 8601 start and end of the current week
         week_start_str, week_end_str = get_current_week()
 
-        for calendar_id in calendar_ids:
-            try:
-                logger.debug("Processing calendar events")
+        logger.debug(f"Week boundaries → start: {week_start_str} | end: {week_end_str}")
 
-                # Fetch events for the calendar within the week range
+        retrieved_events = []
+
+        for calendar in google_calendars:
+            calendar_id = calendar.get("id")
+            calendar_role = calendar.get("role", "unknown")
+
+            if not calendar_id:
+                logger.warning(f"Skipping calendar with missing ID: {calendar.get("name")}")
+                continue
+
+            try:
+                logger.debug(
+                    f"Fetching weekly events from calendar '{calendar_id}' "
+                    f"(role: {calendar_role})"
+                )
+
                 fetched_events = (
                     self.service.events()
                     .list(
@@ -175,15 +209,15 @@ class GCalClient:
 
                 events = fetched_events.get("items", [])
 
-                # Adds Calendar ID to every event for references
+                # Metadata injection
                 for event in events:
                     event["_calendar_id"] = calendar_id
+                    event["_calendar_role"] = calendar_role
 
-                # Add events to the combined list
                 retrieved_events.extend(events)
 
             except Exception as e:
-                logger.error(f"Failed to process calendar: {e}")
+                logger.error(f"Failed to process calendar '{calendar_id}': {e}")
 
         return self.sort_events_by_date(retrieved_events)
 

@@ -5,6 +5,8 @@ from typing import Dict, Any
 
 from config.log.logger import setup_logger
 
+from config.validator import ConfigValidator
+
 logger = setup_logger(__name__)
 
 
@@ -88,7 +90,7 @@ class ConfigLoader:
 
         return dirs
 
-    # --------------------- Public API -------------------------------------
+    # --------------------- Load specific config file -----------------------
     @classmethod
     def load(cls, name: str) -> Dict[str, Any]:
         """
@@ -113,3 +115,28 @@ class ConfigLoader:
 
         cls._cache[name] = merged
         return merged
+
+    # --------------------- Load all config files ---------------------------
+    @classmethod
+    def load_all(cls) -> Dict[str, Any]:
+        """
+        Load all known config files and perform full merge.
+        """
+        merged = cls._deep_merge(
+            cls.load("app_settings"),
+            cls.load("user_settings")
+        )
+        return merged
+
+    # --------------------- Public API -------------------------------------
+    @classmethod
+    def load_and_validate(cls) -> Dict[str, Any]:
+        """
+        Load all config layers and validate structure.
+        """
+        config = cls.load_all()
+
+        if not ConfigValidator.validate(config):
+            raise RuntimeError("DAIAN configuration missing required fields.")
+
+        return config
