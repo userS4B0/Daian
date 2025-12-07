@@ -1,0 +1,31 @@
+# ----- Daian - App Defaults (Shipped in) ------------------------------
+google:
+  credentials_path: "~/.config/daian/google_credentials.json"
+  token_path: "~/.config/daian/google_token.json"
+
+  calendars:
+    - id: "YOUR_CAL_ID"
+      name: "Personal"
+      description: "Your personal events calendar"
+      role: "personal_events"
+
+todoist:
+  api_token: "PUT_YOUR_TOKEN_HERE"
+
+  labels:
+    nonscheduled_tasks: "Nonscheduled"
+
+engine:
+  task_history_path: "data/task_duration_history.json"
+
+app:
+  general:
+    log_file_path: "/var/log/daian/"
+
+  timezone:
+    default: "America/Chicago"
+    fallback: "UTC"
+
+  display:
+    table_fmt: "rounded_outline" # Tabulate library formats
+    datetime_fmt: "%Y-%m-%d %H:%M"
