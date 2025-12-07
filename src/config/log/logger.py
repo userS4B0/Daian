@@ -1,18 +1,21 @@
 import logging
 import logging.handlers
-
 from pathlib import Path
 
-# ----- Logger Variables -----------------------------------------------
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(exist_ok=True)
-
-LOG_FILE = LOG_DIR / "daian.log"
+from config.log.logger_config import LOG_FILE_PATH, CONSOLE_LEVEL, FILE_LEVEL
 
 
-def setup_logger(logger_name: str) -> object:
+def setup_logger(logger_name: str) -> logging.Logger:
     logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)  # Handles general verbosity lvl
+    logger.setLevel(logging.DEBUG)
+
+    # Avoid re-adding handlers if logger is already configured
+    if logger.handlers:
+        return logger
+
+    # Ensure log directory exists
+    log_path = Path(LOG_FILE_PATH)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Log Format
     formatter = logging.Formatter(
@@ -20,29 +23,25 @@ def setup_logger(logger_name: str) -> object:
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    # Rotating file handler (5 MB x 5 backups)
+    # File Handler (Rotating)
     file_handler = logging.handlers.RotatingFileHandler(
-        LOG_FILE,
+        LOG_FILE_PATH,
         maxBytes=5 * 1024 * 1024,
         backupCount=5,
         encoding="utf-8",
     )
-    # file_handler.setLevel(logging.INFO)
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(FILE_LEVEL)
     file_handler.setFormatter(formatter)
 
-    # Optional Debug console
+    # Console Handler
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(CONSOLE_LEVEL)
     console_handler.setFormatter(formatter)
 
-    # Register Handlers
+    # Register handlers
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
-    if not logger.hasHandlers():
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
-
-    # Handles duplication
     logger.propagate = False
 
     return logger

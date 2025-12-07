@@ -19,8 +19,10 @@ engine:
   task_history_path: "data/task_duration_history.json"
 
 app:
-  general:
+  log:
     log_file_path: "/var/log/daian/"
+    console_level: "INFO"
+    file_level: "DEBUG"
 
   timezone:
     default: "America/Chicago"

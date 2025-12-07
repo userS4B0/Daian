@@ -3,9 +3,9 @@ import yaml
 from copy import deepcopy
 from typing import Dict, Any
 
-from config.log.logger import setup_logger
-
 from config.validator import ConfigValidator
+
+from config.log.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -32,8 +32,9 @@ class ConfigLoader:
     # ---------------------- Deep Merge -----------------------------------
     @staticmethod
     def _deep_merge(base: dict, override: dict) -> dict:
-        """Deep merge override → base."""
+        """Deep merge override > base."""
         result = deepcopy(base)
+
         for key, value in override.items():
             if (
                 key in result
@@ -41,8 +42,10 @@ class ConfigLoader:
                 and isinstance(value, dict)
             ):
                 result[key] = ConfigLoader._deep_merge(result[key], value)
+
             else:
                 result[key] = deepcopy(value)
+
         return result
 
     # ---------------------- YAML Loader -----------------------------------
@@ -72,8 +75,9 @@ class ConfigLoader:
         """Return config directories in correct priority order."""
         dirs = []
 
-        # Manual override for developers
+        # Developer Override
         override_dir = os.getenv("DAIAN_CONFIG_DIR")
+
         if override_dir:
             override_dir = os.path.abspath(override_dir)
             logger.debug(f"Using DAIAN_CONFIG_DIR override: {override_dir}")
@@ -94,8 +98,7 @@ class ConfigLoader:
     @classmethod
     def load(cls, name: str) -> Dict[str, Any]:
         """
-        Load <name>.yaml from ALL config levels respecting priority:
-        override > user > system > defaults.
+        Load <name>.yaml across all levels.
         """
         if name in cls._cache:
             return cls._cache[name]
@@ -122,21 +125,54 @@ class ConfigLoader:
         """
         Load all known config files and perform full merge.
         """
-        merged = cls._deep_merge(
-            cls.load("app_settings"),
-            cls.load("user_settings")
-        )
+        merged = cls._deep_merge(cls.load("app_settings"), cls.load("user_settings"))
         return merged
+
+    # --------------------- Apply logger config ------------------------------
+    @staticmethod
+    def _apply_logger_settings(config: Dict[str, Any]):
+        """
+        Update logger_config module dynamically using loaded YAML config.
+        """
+        try:
+            from config.log import logger_config
+
+            logging_cfg = config.get("app", {}).get("log", {})
+
+            path = logging_cfg.get("log_file_path")
+            console = logging_cfg.get("console_level")
+            file_lvl = logging_cfg.get("file_level")
+
+            if path:
+                logger_config.LOG_FILE_PATH = path
+
+            if console:
+                logger_config.CONSOLE_LEVEL = console.upper()
+
+            if file_lvl:
+                logger_config.FILE_LEVEL = file_lvl.upper()
+
+            logger.info(
+                f"Logger configuration applied: "
+                f"path={logger_config.LOG_FILE_PATH}, "
+                f"console={logger_config.CONSOLE_LEVEL}, "
+                f"file={logger_config.FILE_LEVEL}"
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to apply logger settings: {e}")
 
     # --------------------- Public API -------------------------------------
     @classmethod
     def load_and_validate(cls) -> Dict[str, Any]:
-        """
-        Load all config layers and validate structure.
-        """
+        """Load all configuration, validate it, and apply logger settings."""
         config = cls.load_all()
 
+        # Validate structure
         if not ConfigValidator.validate(config):
             raise RuntimeError("DAIAN configuration missing required fields.")
+
+        # Apply dynamic logger config (NO circular dependency)
+        cls._apply_logger_settings(config)
 
         return config

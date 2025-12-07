@@ -11,7 +11,7 @@ class ConfigValidator:
         "todoist.api_token",
         "google",
         "google.token_path",
-        "google.credentials_path"
+        "google.credentials_path",
     ]
 
     @staticmethod
