@@ -59,7 +59,6 @@ class GCalClient:
 
         except Exception as e:
             logger.error(f"Google Authentication failed: {e}")
-            raise RuntimeError("Unable to authenticate to Google Calendar") from e
 
         logger.debug("GCalClient initialized")
 
@@ -80,7 +79,7 @@ class GCalClient:
         # If token isn't present, executes full authentication flow
         logger.debug("Google Token not found, executing full authentication flow")
 
-        if not self.credentialss or not self.credentials.valid:
+        if not self.credentials or not self.credentials.valid:
             flow = InstalledAppFlow.from_client_secrets_file(
                 str(self.creds_path), SCOPES
             )

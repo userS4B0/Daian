@@ -37,15 +37,15 @@ class TodoistClient(TodoistAPI):
         if not todoist_api_token:
             logger.error("Todoist API Token not set in configuration")
 
-        logger.debug("Authenticating to Todoist API...")
-
         try:
+            logger.debug("Authenticating to Todoist API...")
+
             super().__init__(todoist_api_token)
+            
             logger.info("Daian succesfuly authenticated to Todoist API")
 
         except Exception as e:
             logger.error(f"Todoist authentication failed: {e}")
-            raise RuntimeError("Unable to authenticate to Todoist API") from e
 
         logger.debug("TodoistClient initialized")
 
