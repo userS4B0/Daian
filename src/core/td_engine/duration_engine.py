@@ -1,10 +1,8 @@
 # src/core/duration_engine.py
 from typing import Optional
 
-from core.heuristic_estimator import HeuristicEstimator
-from core.history_store import HistoryStore
-
-# from client.todoist_client import process_task_content
+from core.td_engine.heuristic_estimator import HeuristicEstimator
+from core.td_engine.history_store import HistoryStore
 
 class DurationEngine:
     """

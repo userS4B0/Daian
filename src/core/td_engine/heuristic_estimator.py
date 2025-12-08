@@ -4,7 +4,7 @@ import re
 from typing import Any, Dict, List, Tuple
 from tabulate import tabulate
 
-from utils.yml_parser import yml_load_keywords
+from utils.yaml_parser import yaml_load_keywords
 
 from config.app_settings import DEF_TABLE_FMT
 from config.log.logger import setup_logger
@@ -26,7 +26,7 @@ class HeuristicEstimator:
         logger.debug("Initializing HeuristicEstimator...")
 
         try:
-            self.keywords: Dict[str, int] = keyword_table or yml_load_keywords() or {}
+            self.keywords: Dict[str, int] = keyword_table or yaml_load_keywords() or {}
         except Exception as e:
             logger.error(f"Failed to load keywords from YAML: {e}")
             raise

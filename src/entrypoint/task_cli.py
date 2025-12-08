@@ -3,6 +3,8 @@ from rich import print
 
 from client.todoist_client import TodoistClient
 
+from core.td_engine.heuristic_estimator import HeuristicEstimator
+
 tasks_app = typer.Typer(help="Task-related commands")
 
 
@@ -42,8 +44,6 @@ def list_nonscheduled():
 
 @tasks_app.command("estimate", help="Estimates task completion time.")
 def estimate_task(task_id: str):
-    from core.heuristic_estimator import HeuristicEstimator
-
     todoist_client = TodoistClient()
     task = todoist_client.get_task(task_id)
 
