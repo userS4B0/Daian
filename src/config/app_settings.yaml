@@ -14,9 +14,8 @@ todoist:
 
   labels:
     nonscheduled_tasks: "Nonscheduled"
-
-engine:
-  task_history_path: "data/task_duration_history.json"
+    quick_tasks: "Quick"
+    deepwork_tasks: "DeepWork"
 
 app:
   log:
@@ -24,10 +23,30 @@ app:
     console_level: "INFO"
     file_level: "DEBUG"
 
+  display:
+    table_fmt: "rounded_outline" # Tabulate library formats
+    datetime_fmt: "%Y-%m-%d %H:%M"
+
   timezone:
     default: "America/Chicago"
     fallback: "UTC"
 
-  display:
-    table_fmt: "rounded_outline" # Tabulate library formats
-    datetime_fmt: "%Y-%m-%d %H:%M"
+td_engine: # Task Duration Engine
+  keywords_path: "config/td_engine/keywords.yaml"
+  task_length_heuristic: 15       # Breakpoint to add duration because of long text
+  task_length_increaser: 15       # Mins to add by increment
+
+  priority_mapper:
+    p4: 90
+    p3: 60
+    p2: 30
+    p1: 15
+
+  quick_label_increaser: 15
+  deepwork_label_increaser: 60
+
+  word_count_threshold: 12
+  word_count_bonus: 15
+
+  history_path: "data/task_history.json"
+
