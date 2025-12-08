@@ -48,5 +48,5 @@ td_engine: # Task Duration Engine
   word_count_threshold: 12
   word_count_bonus: 15
 
-  history_path: "data/task_history.json"
+  history_path: "~/.config/daian/data/task_history.json"
 
