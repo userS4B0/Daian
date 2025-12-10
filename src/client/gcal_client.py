@@ -10,11 +10,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from utils.time_utils import get_current_week, normalize_datetime
-from config.config_loader import ConfigLoader
 
 from config.log.logger import setup_logger
-
-config = ConfigLoader.load_and_validate()
 
 logger = setup_logger(__name__)
 
@@ -229,12 +226,7 @@ class GCalClient:
         Returns:
             str: formatted tabulate string table with all Google Calendar events
         """
-        table_fmt = config.get("app", {}).get("display", {}).get("table_fmt", {})
         events_table = []
-
-        if not table_fmt:
-            logger.warning("table_fmt not set in configuration")
-            table_fmt = "rounded_outline"
 
         if not events:
             logger.warning("No events found!")
@@ -263,7 +255,7 @@ class GCalClient:
         return tabulate(
             events_table,
             headers=headers,
-            tablefmt=table_fmt,
+            tablefmt="rounded_outline",
         )
 
     # ----- Sort Events ----------------------------------------------------
