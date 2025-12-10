@@ -5,6 +5,10 @@ from client.todoist_client import TodoistClient
 
 from core.td_engine.heuristic_estimator import HeuristicEstimator
 
+from config.config_loader import ConfigLoader
+
+config = ConfigLoader.load_and_validate()
+
 tasks_app = typer.Typer(help="Task-related commands")
 
 
@@ -47,7 +51,7 @@ def estimate_task(task_id: str):
     todoist_client = TodoistClient()
     task = todoist_client.get_task(task_id)
 
-    estimator = HeuristicEstimator()
+    estimator = HeuristicEstimator(config)
     estimation_result = estimator.estimate(task)
 
     print(
@@ -70,7 +74,7 @@ def append_nonschedule():
         f"[bold red]Expired tasks:[/bold red]\n{todoist_client.tasks_totable(expired_tasks)}"
     )
 
-    planner = Planner(todoist_client)
+    planner = Planner(todoist_client, config)
 
     planner.add_to_nonscheduled_queue(expired_tasks)
 
