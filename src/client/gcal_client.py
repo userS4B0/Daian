@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pathlib
 
-from tabulate import tabulate
 from typing import List, Dict, Any
 
 from google.oauth2.credentials import Credentials
@@ -10,6 +9,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from utils.time_utils import get_current_week, normalize_datetime
+from utils.str_utils import generate_datatable
 
 from config.log.logger import setup_logger
 
@@ -226,10 +226,10 @@ class GCalClient:
         Returns:
             str: formatted tabulate string table with all Google Calendar events
         """
-        events_table = []
+        events_data = []
 
         if not events:
-            logger.warning("No events found!")
+            logger.warning("No events found")
             return
 
         # Build table rows
@@ -248,15 +248,11 @@ class GCalClient:
             start_fmt = normalize_datetime(start)
             end_fmt = normalize_datetime(end)
 
-            events_table.append([title, start_fmt, end_fmt])
+            events_data.append([title, start_fmt, end_fmt])
 
-        headers = ["Title", "Start time", "End Time"]
+        events_headers = ["Title", "Start time", "End Time"]
 
-        return tabulate(
-            events_table,
-            headers=headers,
-            tablefmt="rounded_outline",
-        )
+        return generate_datatable(events_data, events_headers)
 
     # ----- Sort Events ----------------------------------------------------
     @staticmethod

@@ -1,7 +1,9 @@
-from tabulate import tabulate
-from datetime import datetime
 from typing import Dict, Any
+
+from datetime import datetime
+
 from utils.time_utils import get_current_week, normalize_datetime
+from utils.str_utils import generate_datatable
 
 from config.log.logger import setup_logger
 
@@ -94,11 +96,11 @@ class Scheduler:
         Returns:
             str: A printable table generated with tabulate.
         """
-        logger.debug("Converting free slots into a table")
 
-        free_slot_table = []
+        free_slot_data = []
+
         for slot in free_slots:
-            free_slot_table.append(
+            free_slot_data.append(
                 [
                     slot["start"].strftime("%Y-%m-%d %H:%M"),
                     slot["end"].strftime("%Y-%m-%d %H:%M"),
@@ -106,5 +108,6 @@ class Scheduler:
                 ]
             )
 
-        headers = ["Free From", "Free Until", "Duration"]
-        return tabulate(free_slot_table, headers=headers, tablefmt="rounded_outline")
+        free_slots_headers = ["Free From", "Free Until", "Duration"]
+        return
+        return generate_datatable(free_slot_data, free_slots_headers)

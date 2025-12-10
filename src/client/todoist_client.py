@@ -1,9 +1,9 @@
 from todoist_api_python.api import TodoistAPI
 
-from tabulate import tabulate
 from typing import Dict, Any
 
 from utils.time_utils import normalize_datetime, is_expired_by_days
+from utils.str_utils import generate_datatable
 
 from config.log.logger import setup_logger
 
@@ -49,7 +49,7 @@ class TodoistClient(TodoistAPI):
         logger.debug("TodoistClient initialized")
 
     # ----- Get tasks wrapper ----------------------------------------------
-    def get_tasks_wrapper(self, **kwargs):
+    def _get_tasks_wrapper(self, **kwargs):
         """
         Wrapper around get_tasks() to handle API errors gracefully.
         """
@@ -73,7 +73,7 @@ class TodoistClient(TodoistAPI):
             list[object]: List of overdue tasks (more than 1 day old)
         """
         expired_tasks = []
-        all_tasks = self.get_tasks_wrapper()
+        all_tasks = self._get_tasks_wrapper()
 
         for task in all_tasks:
             if not task.due:
@@ -101,7 +101,7 @@ class TodoistClient(TodoistAPI):
             "nonscheduled_tasks", "Nonscheduled"
         )
 
-        return self.get_tasks_wrapper(label=nonsch_tasks_label)
+        return self._get_tasks_wrapper(label=nonsch_tasks_label)
 
     # ----- Retrieve all tasks --------------------------------------------
     def get_all_tasks(self, limit: int = 10) -> list[object]:
@@ -113,7 +113,7 @@ class TodoistClient(TodoistAPI):
         Returns:
             list[object]: List of nonscheduled tasks
         """
-        all_tasks = self.get_tasks_wrapper()
+        all_tasks = self._get_tasks_wrapper()
 
         if limit:
             return all_tasks[:limit]
@@ -161,10 +161,7 @@ class TodoistClient(TodoistAPI):
             except Exception as e:
                 logger.error(f"Failed to process task: {e}")
 
-        headers = ["ID", "Priority", "Task", "Labels", "Due Date"]
+        
+        tasks_headers = ["ID", "Priority", "Task", "Labels", "Due Date"]
 
-        return tabulate(
-            tasks_table,
-            headers=headers,
-            tablefmt="rounded_outline",
-        )
+        return generate_datatable(tasks_table, tasks_headers)
