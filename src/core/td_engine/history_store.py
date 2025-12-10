@@ -5,7 +5,7 @@ from typing import Optional, Dict
 
 
 class HistoryStore:
-    def __init__(self, path: Optional[Path] = None):
+    def __init__(self, path: Optional[str] = None):
         self.path = Path(path) if path else Path("data/task_history.json")
         self._data: Dict[str, Dict] = {}
         self._load()
