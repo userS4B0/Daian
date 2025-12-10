@@ -109,5 +109,5 @@ class Scheduler:
             )
 
         free_slots_headers = ["Free From", "Free Until", "Duration"]
-        return
+        
         return generate_datatable(free_slot_data, free_slots_headers)
