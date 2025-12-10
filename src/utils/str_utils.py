@@ -12,7 +12,7 @@ logger = setup_logger(__name__)
 _TABLE_FMT = (
     config.get("app", {}).get("display", {}).get("table_fmt", "rounded_outline")
 )
-_MAX_FIELD_LENGTH = 20
+_MAX_FIELD_LENGTH = 50
 
 
 def _trim_field(value: str, max_len: int = _MAX_FIELD_LENGTH) -> str:
