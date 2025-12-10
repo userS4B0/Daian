@@ -40,7 +40,7 @@ def yaml_load_keywords() -> Dict:
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     
     # Path to /data/keywords.yml
-    keywords_path = os.path.join(project_root, "data", "keywords.yaml")
+    keywords_path = os.path.join(project_root, "dev_config", "data", "keywords.yaml")
 
     _KEYWORDS_CACHE = load_yaml(keywords_path)
 
