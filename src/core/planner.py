@@ -1,9 +1,8 @@
-from typing import Object, Dict, Any, List
+from typing import Dict, Any, List
 
 from core.duration_engine import DurationEngine
 
 from config.log.logger import setup_logger
-from config.user_settings import NONSCHEDULED_TASKS_LABEL
 
 logger = setup_logger(__name__)
 
@@ -18,13 +17,13 @@ class Planner:
     Handles classification, updates, and synchronization across services.
     """
 
-    def __init__(self, todoist_client: Object, config: Dict[str, Any] = None):
+    def __init__(self, todoist_client: object, config: Dict[str, Any] = None):
         logger.debug("Planner initialized")
 
         self.todoist = todoist_client
         self.duration_engine = DurationEngine(config)
 
-    def remove_task_duedate(self, tasks: List[Object]) -> None:
+    def remove_task_duedate(self, tasks: List[object]) -> None:
         """
         Remove due date to all provided Todoist tasks.
         """
@@ -34,7 +33,7 @@ class Planner:
 
             self.todoist.update_task(task_id=task.id, due_string="no date")
 
-    def apply_label_to_tasks(self, tasks: List[Object], new_label: str) -> None:
+    def apply_label_to_tasks(self, tasks: List[object], new_label: str) -> None:
         """
         Assign the specified label to all provided Todoist tasks.
         """
@@ -49,13 +48,13 @@ class Planner:
 
             self.todoist.update_task(task_id=task.id, labels=task_labels)
 
-    def add_to_nonscheduled_queue(self, tasks: List[Object]) -> None:
+    def add_to_nonscheduled_queue(self, tasks: List[object], nonsch_label: str) -> None:
         """
         Adds a list of Todoist tasks to the nonscheduled tasks queue for future re-scheduling
         """
 
         self.remove_task_duedate(tasks)
-        self.apply_label_to_tasks(tasks, NONSCHEDULED_TASKS_LABEL)
+        self.apply_label_to_tasks(tasks, nonsch_label)
 
     def estimate_duration(self, task):
         return self.duration_engine.estimate(task)
