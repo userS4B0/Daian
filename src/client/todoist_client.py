@@ -1,15 +1,14 @@
 from todoist_api_python.api import TodoistAPI
 
 from tabulate import tabulate
+from typing import Dict, Any
 
 from utils.time_utils import normalize_datetime, is_expired_by_days
 
-from config.config_loader import ConfigLoader
 from config.log.logger import setup_logger
 
 logger = setup_logger(__name__)
 
-config = ConfigLoader.load_and_validate()
 
 # FEATURE: Implement task retrieving cache
 # Issue URL: https://github.com/userS4B0/my-daily-planner/issues/8
@@ -23,22 +22,25 @@ class TodoistClient(TodoistAPI):
     """
 
     # ----- Main Constructor -----------------------------------------------
-    def __init__(self):
+    def __init__(self, config: Dict[str, Any] = None):
         """
         Initialize the TodoistClient with the API token.
         """
         logger.debug("Initializing TodoistClient instance...")
+        self.todoist_client_cfg = config.get("todoist", {})
 
-        todoist_api_token = config.get("todoist", {}).get("api_token", {})
+        self.special_labels = self.todoist_client_cfg.get("labels", {})
 
-        if not todoist_api_token:
+        _TODOIST_API_TOKEN = self.todoist_client_cfg.get("api_token", "")
+
+        if not _TODOIST_API_TOKEN:
             logger.error("Todoist API Token not set in configuration")
 
         try:
             logger.debug("Authenticating to Todoist API...")
 
-            super().__init__(todoist_api_token)
-            
+            super().__init__(_TODOIST_API_TOKEN)
+
             logger.info("Daian succesfuly authenticated to Todoist API")
 
         except Exception as e:
@@ -95,14 +97,11 @@ class TodoistClient(TodoistAPI):
         Returns:
             list[object]: List of nonscheduled tasks
         """
-        nonscheduled_tasks_label = (
-            config.get("todoist", {}).get("labels", {}).get("nonscheduled_tasks", {})
+        nonsch_tasks_label = self.special_labels.get(
+            "nonscheduled_tasks", "Nonscheduled"
         )
 
-        if not nonscheduled_tasks_label:
-            logger.error("nonscheduled_tasks_label not set in configuration")
-
-        return self.get_tasks_wrapper(label=nonscheduled_tasks_label)
+        return self.get_tasks_wrapper(label=nonsch_tasks_label)
 
     # ----- Retrieve all tasks --------------------------------------------
     def get_all_tasks(self, limit: int = 10) -> list[object]:
@@ -133,12 +132,7 @@ class TodoistClient(TodoistAPI):
         Returns:
             str: formatted tabulate string table with all Todoist tasks
         """
-        table_fmt = config.get("app", {}).get("display", {}).get("table_fmt", {})
         tasks_table = []
-
-        if not table_fmt:
-            logger.warning("table_fmt not set in configuration")
-            table_fmt = "rounded_outline"
 
         if not tasks:
             logger.warning("No tasks found!")
@@ -172,5 +166,5 @@ class TodoistClient(TodoistAPI):
         return tabulate(
             tasks_table,
             headers=headers,
-            tablefmt=table_fmt,
+            tablefmt="rounded_outline",
         )

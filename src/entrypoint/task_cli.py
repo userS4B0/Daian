@@ -10,13 +10,13 @@ from config.config_loader import ConfigLoader
 config = ConfigLoader.load_and_validate()
 
 tasks_app = typer.Typer(help="Task-related commands")
+todoist_client = TodoistClient(config)
 
 
 # ----- List tasks -----------------------------------------------------
 @tasks_app.command("list-all", help="Lists all tasks & filter quantity by limit.")
 def list_all(limit: int = typer.Option(10, help="Limit number of tasks")):
     """List all tasks."""
-    todoist_client = TodoistClient()
     all_tasks = todoist_client.get_all_tasks(limit)
 
     print(
@@ -27,7 +27,6 @@ def list_all(limit: int = typer.Option(10, help="Limit number of tasks")):
 @tasks_app.command("list-expired", help="List tasks with expired due date by 24h.")
 def list_expired():
     """Show all expired tasks."""
-    todoist_client = TodoistClient()
     expired_tasks = todoist_client.get_expired_tasks()
 
     print(
@@ -38,7 +37,6 @@ def list_expired():
 @tasks_app.command("list-nonscheduled", help="List tasks ready to re-schedule.")
 def list_nonscheduled():
     """Show tasks with no due date assigned."""
-    todoist_client = TodoistClient()
     nonscheduled_tasks = todoist_client.get_nonscheduled_tasks()
 
     print(
@@ -48,7 +46,6 @@ def list_nonscheduled():
 
 @tasks_app.command("estimate", help="Estimates task completion time.")
 def estimate_task(task_id: str):
-    todoist_client = TodoistClient()
     task = todoist_client.get_task(task_id)
 
     estimator = HeuristicEstimator(config)
@@ -65,8 +62,6 @@ def estimate_task(task_id: str):
 )
 def append_nonschedule():
     from core.planner import Planner
-
-    todoist_client = TodoistClient()
 
     expired_tasks = todoist_client.get_expired_tasks()
 
