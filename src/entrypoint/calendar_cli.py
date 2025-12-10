@@ -8,11 +8,10 @@ from config.config_loader import ConfigLoader
 config = ConfigLoader.load_and_validate()
 
 calendar_app = typer.Typer(help="Google Calendar interactions.")
+gcal_client = GCalClient(config)
 
 @calendar_app.command("show-all", help="Prints all events & filters quantity from `limit` flag.")
 def show_all_events(limit: int = 5, help="limits number of events to show."):
-    
-    gcal_client = GCalClient(config)
     
     events = gcal_client.get_numberof_events(limit)
 
@@ -20,8 +19,6 @@ def show_all_events(limit: int = 5, help="limits number of events to show."):
 
 @calendar_app.command("show-thisweek", help="Shows current week events.")
 def show_thisweek_events():
-    
-    gcal_client = GCalClient(config)
     
     thisweek_events = gcal_client.get_thisweek_events()
 
@@ -32,8 +29,7 @@ def show_avaliability():
 
     from core.scheduler import Scheduler
 
-    gcal_client = GCalClient(config)
-    scheduler = Scheduler()
+    scheduler = Scheduler(config)
     
     thisweek_events = gcal_client.get_thisweek_events()
     free_slots = scheduler.get_free_slots(thisweek_events)

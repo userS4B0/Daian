@@ -1,9 +1,7 @@
 from tabulate import tabulate
 from datetime import datetime
-
+from typing import Dict, Any
 from utils.time_utils import get_current_week, normalize_datetime
-
-from config.app_settings import DEF_DATETIME_FMT, DEF_TABLE_FMT
 
 from config.log.logger import setup_logger
 
@@ -17,8 +15,10 @@ class Scheduler:
     """
 
     # ----- Main Constructor -----------------------------------------------
-    def __init__(self):
+    def __init__(self, config: Dict[str, Any] = None):
         logger.debug("Scheduler initialized")
+
+        _DATETIME_FMT = config.get("app", {}).get("display", {}).get("datetime_fmt", "%Y-%m-%d %H:%M")
 
     # ----- Get free Google Calendar slots ---------------------------------
     @staticmethod
@@ -100,11 +100,11 @@ class Scheduler:
         for slot in free_slots:
             free_slot_table.append(
                 [
-                    slot["start"].strftime(DEF_DATETIME_FMT),
-                    slot["end"].strftime(DEF_DATETIME_FMT),
+                    slot["start"].strftime("%Y-%m-%d %H:%M"),
+                    slot["end"].strftime("%Y-%m-%d %H:%M"),
                     str(slot["end"] - slot["start"]),
                 ]
             )
 
         headers = ["Free From", "Free Until", "Duration"]
-        return tabulate(free_slot_table, headers=headers, tablefmt=DEF_TABLE_FMT)
+        return tabulate(free_slot_table, headers=headers, tablefmt="rounded_outline")
