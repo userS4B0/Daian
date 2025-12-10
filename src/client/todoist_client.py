@@ -145,7 +145,7 @@ class TodoistClient(TodoistAPI):
                 formatted_due = (
                     normalize_datetime(task.due.datetime)
                     if task.due and task.due.datetime
-                    else "—"
+                    else ""
                 )
 
                 tasks_table.append(
