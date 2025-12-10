@@ -1,9 +1,9 @@
 import os
-import yaml
 from copy import deepcopy
 from typing import Dict, Any
 
 from config.validator import ConfigValidator
+from utils.yaml_parser import load_yaml
 
 from config.log.logger import setup_logger
 
@@ -48,27 +48,6 @@ class ConfigLoader:
 
         return result
 
-    # ---------------------- YAML Loader -----------------------------------
-    # FIXME: Properly export function to utils/yml_utils
-    # Export _load_yaml class function to utils/yml_utils & use load_yml function
-    # assignees: userS4B0
-    # labels: priority_medium, core, bug
-    # milestone: v1.0.0
-    @staticmethod
-    def _load_yaml(filepath: str) -> Dict[str, Any]:
-        """Loads YAML safely or returns {}."""
-        if not os.path.exists(filepath):
-            return {}
-
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f) or {}
-                logger.debug(f"Loaded config: {filepath}")
-                return data
-        except Exception as e:
-            logger.error(f"Failed to load YAML at {filepath}: {e}")
-            return {}
-
     # ----------------------- Priority Resolution ---------------------------
     @classmethod
     def _get_candidate_dirs(cls) -> list[str]:
@@ -110,7 +89,7 @@ class ConfigLoader:
         # Resolve all directories in order
         for directory in cls._get_candidate_dirs():
             filepath = os.path.join(directory, filename)
-            data = cls._load_yaml(filepath)
+            data = load_yaml(filepath)
 
             if data:
                 logger.debug(f"Merging config from: {filepath}")
