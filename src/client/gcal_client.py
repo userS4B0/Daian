@@ -3,7 +3,7 @@ from __future__ import annotations
 import pathlib
 
 from tabulate import tabulate
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -18,7 +18,7 @@ config = ConfigLoader.load_and_validate()
 
 logger = setup_logger(__name__)
 
-# Necessaroy scope for complete read/write operations in Google Calendar
+# Necessary scope for complete read/write operations in Google Calendar
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
@@ -28,27 +28,34 @@ class GCalClient:
     """
 
     # ----- Main Constructor -----------------------------------------------
-    def __init__(self):
+    def __init__(self, config: Dict[str, Any] = None):
         """Path initialization, credential containerization and authentication."""
 
         logger.debug("Initializing GcalClient instance...")
+        self.gcal_client_cfg = config.get("google", {})
 
-        GOOGLE_CREDENTIALS_PATH = config.get("google", {}).get("credentials_path", {})
-        GOOGLE_TOKEN_PATH = config.get("google", {}).get("token_path", {})
+        _GOOGLE_CREDENTIALS_PATH = self.gcal_client_cfg.get("credentials_path", "")
+        _GOOGLE_TOKEN_PATH = self.gcal_client_cfg.get("token_path", "")
 
-        if not GOOGLE_CREDENTIALS_PATH:
+        if not _GOOGLE_CREDENTIALS_PATH:
             logger.error("google_credentials_path not found in config.")
             raise ValueError("google_credentials_path not found in config.")
 
-        if not GOOGLE_TOKEN_PATH:
+        if not _GOOGLE_TOKEN_PATH:
             logger.error("google_token_path not found in config.")
             raise ValueError("google_token_path not found in config.")
 
-        self.creds_path = pathlib.Path(GOOGLE_CREDENTIALS_PATH)
-        self.token_path = pathlib.Path(GOOGLE_TOKEN_PATH)
+        self.creds_path = pathlib.Path(_GOOGLE_CREDENTIALS_PATH)
+        self.token_path = pathlib.Path(_GOOGLE_TOKEN_PATH)
 
         self.credentials = None
         self.service = None
+
+        self.calendars = self.gcal_client_cfg.get("calendars", [])
+
+        if not self.calendars:
+            logger.error("No calendars found in config under google.calendars")
+            raise ValueError("No calendars found in config under google.calendars")
 
         logger.debug("Attempting Google Oauth...")
 
@@ -107,26 +114,20 @@ class GCalClient:
 
         logger.debug("Fetching calendar list from configuration...")
 
-        # Load full google settings (expects google.calendars)
-        google_calendars = config.get("google", {}).get("calendars", [])
-
-        if not google_calendars:
-            logger.error("No calendars found in configuration under google.calendars")
-            return []
-
         retrieved_events = []
 
-        for calendar in google_calendars:
+        for calendar in self.calendars:
             calendar_id = calendar.get("id")
             calendar_role = calendar.get("role", "unknown")
+            calendar_name = calendar.get("name", "unknown")
 
             if not calendar_id:
-                logger.warning(f"Skipping calendar with missing ID: {calendar.get("name")}")
+                logger.warning(f"Skipping calendar with missing ID: {calendar_name}")
                 continue
 
             try:
                 logger.debug(
-                    f"Fetching up to {max_results} events from calendar '{calendar_id}' "
+                    f"Fetching up to {max_results} events from calendar '{calendar_name}'"
                     f"(role: {calendar_role})"
                 )
 
@@ -145,15 +146,16 @@ class GCalClient:
 
                 # Add metadata to each event
                 for event in events:
+                    event["_calendar_name"] = calendar_name
                     event["_calendar_id"] = calendar_id
                     event["_calendar_role"] = calendar_role
 
                 retrieved_events.extend(events)
 
             except Exception as e:
-                logger.error(f"Failed to fetch events from {calendar_id}: {e}")
+                logger.error(f"Failed to fetch events from {calendar_name}: {e}")
 
-        return self.sort_events_by_date(retrieved_events)
+        return self._sort_events_by_date(retrieved_events)
 
     # ----- List this week's events ----------------------------------------
     def get_thisweek_events(self) -> List[Dict]:
@@ -165,14 +167,7 @@ class GCalClient:
             list[dict]: Combined list of all events from the current week.
         """
 
-        logger.debug("Fetching calendar list from configuration for weekly events")
-
-        # Load full google settings (expects google.calendars)
-        google_calendars = config.get("google", {}).get("calendars", [])
-
-        if not google_calendars:
-            logger.error("No calendars found in configuration under google.calendars")
-            return []
+        logger.debug("Fetching this week's events...")
 
         # Get ISO 8601 start and end of the current week
         week_start_str, week_end_str = get_current_week()
@@ -181,17 +176,18 @@ class GCalClient:
 
         retrieved_events = []
 
-        for calendar in google_calendars:
+        for calendar in self.calendars:
             calendar_id = calendar.get("id")
             calendar_role = calendar.get("role", "unknown")
+            calendar_name = calendar.get("name", "unknown")
 
             if not calendar_id:
-                logger.warning(f"Skipping calendar with missing ID: {calendar.get("name")}")
+                logger.warning(f"Skipping calendar with missing ID: {calendar_name}")
                 continue
 
             try:
                 logger.debug(
-                    f"Fetching weekly events from calendar '{calendar_id}' "
+                    f"Fetching weekly events from calendar '{calendar_name}' "
                     f"(role: {calendar_role})"
                 )
 
@@ -213,13 +209,14 @@ class GCalClient:
                 for event in events:
                     event["_calendar_id"] = calendar_id
                     event["_calendar_role"] = calendar_role
+                    event["_calendar_name"] = calendar_name
 
                 retrieved_events.extend(events)
 
             except Exception as e:
-                logger.error(f"Failed to process calendar '{calendar_id}': {e}")
+                logger.error(f"Failed to process calendar '{calendar_name}': {e}")
 
-        return self.sort_events_by_date(retrieved_events)
+        return self._sort_events_by_date(retrieved_events)
 
     # ----- Build event table ----------------------------------------------
     @staticmethod
@@ -271,7 +268,7 @@ class GCalClient:
 
     # ----- Sort Events ----------------------------------------------------
     @staticmethod
-    def sort_events_by_date(events: list[dict]) -> list[dict]:
+    def _sort_events_by_date(events: list[dict]) -> list[dict]:
         """
         Sorts a list of Google calendar events by start date & time.
 
