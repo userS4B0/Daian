@@ -1,4 +1,4 @@
-from typing import Dict, Any, Object
+from typing import Dict, Any
 
 from core.td_engine.heuristic_estimator import HeuristicEstimator
 from core.td_engine.history_store import HistoryStore
@@ -33,7 +33,7 @@ class DurationEngine:
         self.quick_lbl_inc = self.td_engine_cfg.get("quick_lbl_inc", 15)
         self.deepwork_lbl_inc = self.td_engine_cfg.get("deepwork_lbl_inc", 60)
 
-    def baseline_estimate(self, task: Object) -> int:
+    def baseline_estimate(self, task: object) -> int:
         # Basic baseline mapping by priority (Todoist-style 1..4)
         # Assumes high number means more important
 
@@ -54,7 +54,7 @@ class DurationEngine:
         if "deepwork" in task_labels:
             base = max(base, self.deepwork_lbl_inc)
 
-    def estimate(self, task: Object) -> Dict[str, Any]:
+    def estimate(self, task: object) -> Dict[str, Any]:
         """
         Returns:
             {
@@ -109,7 +109,7 @@ class DurationEngine:
             "reason": reason,
         }
 
-    def register_actual(self, task: Object, actual_minutes: float):
+    def register_actual(self, task: object, actual_minutes: float):
         """
         After task completion (or by aligning scheduled event with real duration),
         register the actual minutes for the derived key.
