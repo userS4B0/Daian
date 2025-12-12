@@ -11,6 +11,7 @@ from utils.str_utils import generate_datatable
 
 logger = setup_logger(__name__)
 
+
 # FEATURE: Implement basic google calendar event functions
 # Implement rearranging Google Calendar Events
 # assignees: userS4B0
@@ -28,7 +29,11 @@ class Planner:
         self.todoist = todoist_client
         self.duration_engine = DurationEngine(config)
 
-        _DATETIME_FMT = config.get("app", {}).get("display", {}).get("datetime_fmt", "%Y-%m-%d %H:%M")
+        _DATETIME_FMT = (
+            config.get("app", {})
+            .get("display", {})
+            .get("datetime_fmt", "%Y-%m-%d %H:%M")
+        )
 
     def remove_task_duedate(self, tasks: List[object]) -> None:
         """
@@ -150,14 +155,13 @@ class Planner:
             )
 
         free_slots_headers = ["Free From", "Free Until", "Duration"]
-        
+
         return generate_datatable(free_slot_data, free_slots_headers)
 
     def estimate_duration(self, task):
         return self.duration_engine.estimate(task)
 
     def arrange_tasks(self, tasks: List[object]) -> None:
-
         # Process task list
         # If there's no due date & task labels contain nonscheduled_label, rearrange
         # If there's a pause label, dont arrange
