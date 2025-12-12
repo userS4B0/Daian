@@ -11,7 +11,7 @@ from config.config_loader import ConfigLoader
 
 config = ConfigLoader.load_and_validate()
 
-planner_app = typer.Typer(help="Task and calendar arrangements planner.")
+planner_app = typer.Typer(help="Planning commands")
 
 
 @planner_app.command("show-avaliability", help="Shows current week avaliability.")
