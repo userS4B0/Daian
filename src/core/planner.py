@@ -2,7 +2,7 @@ from typing import Dict, Any, List
 
 from datetime import datetime
 
-from core.duration_engine import DurationEngine
+from core.td_engine.duration_engine import DurationEngine
 
 from config.log.logger import setup_logger
 
