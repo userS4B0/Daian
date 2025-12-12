@@ -28,13 +28,13 @@ def show_thisweek_events():
 @calendar_app.command("show-avaliability", help="Shows current week avaliability.")
 def show_avaliability():
 
-    from core.scheduler import Scheduler
+    from core.planner import Planner
 
     gcal_client = GCalClient(config)
 
-    scheduler = Scheduler(config)
+    planner = Planner(config)
     
     thisweek_events = gcal_client.get_thisweek_events()
-    free_slots = scheduler.get_free_slots(thisweek_events)
+    free_slots = planner.get_free_slots(thisweek_events)
 
-    print(f"[bold cyan] This week's avaliability:[/bold cyan]\n{scheduler.free_slots_totable(free_slots)}")
+    print(f"[bold cyan] This week's avaliability:[/bold cyan]\n{planner.free_slots_totable(free_slots)}")
