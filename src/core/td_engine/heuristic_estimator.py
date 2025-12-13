@@ -88,15 +88,3 @@ class HeuristicEstimator:
             "word_count": wc,
         }
 
-    # # -------------------------------------------------------------------------
-    # @staticmethod
-    # def estimation_totable(estimation_result: Dict[str, Any]) -> str:
-    #     """
-    #     Returns structured heuristic estimation for a task formatted as a tabulate table.
-    #     """
-
-    #     # Convert to list of rows: [(key, value), ...]
-    #     estimation_data = [(key, value) for key, value in estimation_result.items()]
-    #     estimation_headers = ["Analyzed Field", "Value"]
-
-    #     return generate_datatable(estimation_data, estimation_headers)
