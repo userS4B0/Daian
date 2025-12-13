@@ -2,7 +2,7 @@ from typing import Dict, Any, List
 
 from datetime import datetime
 
-from core.td_engine.duration_engine import DurationEngine
+from core.td_engine.task_duration_engine import TaskDurationEngine
 
 from config.log.logger import setup_logger
 from config.config_loader import ConfigLoader
@@ -31,7 +31,7 @@ class Planner:
             config = ConfigLoader.load_and_validate()
 
         self.todoist = todoist_client
-        self.duration_engine = DurationEngine(config)
+        self.duration_engine = TaskDurationEngine(config)
 
         _DATETIME_FMT = (
             config.get("app", {})
