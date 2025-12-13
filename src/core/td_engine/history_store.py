@@ -1,7 +1,8 @@
 import json
 
+from typing import Optional, Dict, Any
 from pathlib import Path
-from typing import Optional, Dict
+
 
 
 class HistoryStore:
@@ -30,9 +31,11 @@ class HistoryStore:
         except Exception:
             pass  # Do not raise on disk write failures
 
-    def get(self, key: str) -> Optional[Dict]:
-        """Return stored stat for key or None."""
-        return self.data.get(key)
+    def get(self, key: str, default: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Return stored stat for key or default if not present.
+        """
+        return self._data.get(key, default)
 
     def get_avg_minutes(self, key: str) -> Optional[float]:
         stat = self.get(key)

@@ -2,6 +2,7 @@ import os
 import yaml
 
 from typing import Dict, Any
+from pathlib import Path
 
 from config.log.logger import setup_logger
 
@@ -14,6 +15,9 @@ _KEYWORDS_CACHE = None
 def load_yaml(filepath: str) -> Dict[str, Any]:
     """Loads YAML safely or returns {}."""
     if not os.path.exists(filepath):
+
+        logger.warning(f"Path {filepath} does not exist")
+        
         return {}
 
     try:
@@ -26,7 +30,7 @@ def load_yaml(filepath: str) -> Dict[str, Any]:
         return {}
 
 # ---------------------- YAML Load Keywords ----------------------------
-def yaml_load_keywords() -> Dict:
+def yaml_load_keywords(config: Dict[str, Any] = None) -> Dict:
     """Load keyword → weight mapping from data/keywords.yml."""
 
     global _KEYWORDS_CACHE
@@ -35,12 +39,13 @@ def yaml_load_keywords() -> Dict:
     if _KEYWORDS_CACHE is not None:
         logger.debug("Keyword file already in cache, reusing...")
         return _KEYWORDS_CACHE
-
-    # Absolute path to project src/ 
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     
     # Path to /data/keywords.yml
-    keywords_path = os.path.join(project_root, "dev_config", "data", "keywords.yaml")
+    logger.debug("Loading keywords from config")
+    
+    keywords_path = Path(config.get("keywords_path", ""))
+
+    logger.info(f"Keywords file found at {keywords_path}")
 
     _KEYWORDS_CACHE = load_yaml(keywords_path)
 

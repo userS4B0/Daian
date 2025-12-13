@@ -2,7 +2,7 @@ import typer
 from rich import print
 
 from core.planner import Planner
-from core.td_engine.heuristic_estimator import HeuristicEstimator
+from core.td_engine.task_duration_engine import TaskDurationEngine
 
 from client.gcal_client import GCalClient
 from client.todoist_client import TodoistClient
@@ -19,7 +19,7 @@ def show_avaliability():
     gcal_client = GCalClient(config)
 
     todoist_client = None
-    
+
     planner = Planner(todoist_client, config)
 
     thisweek_events = gcal_client.get_thisweek_events()
@@ -36,11 +36,11 @@ def estimate_task(task_id: str):
 
     task = todoist_client.get_task(task_id)
 
-    estimator = HeuristicEstimator(config)
-    estimation_result = estimator.estimate(task)
+    td_engine = TaskDurationEngine(config)
+    estimation_result = td_engine.estimate(task)
 
     print(
-        f"\n[bold green]Estimation result:[/bold green]\n{estimator.estimation_totable(estimation_result)}"
+        f"\n[bold green]Estimation result:[/bold green]\n{td_engine.estimation_totable(estimation_result)}"
     )
 
 

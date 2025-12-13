@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Tuple
 from config.log.logger import setup_logger
 
 from utils.yaml_parser import yaml_load_keywords
-from utils.str_utils import generate_datatable
+# from utils.str_utils import generate_datatable
 
 
 logger = setup_logger(__name__)
@@ -24,9 +24,10 @@ class HeuristicEstimator:
         self.word_count_threshold = self.td_engine_cfg.get("word_count_threshold", 12)
         self.word_count_bonus = self.td_engine_cfg.get("word_count_bonus", 15)
 
-        # keywords_path = self.td_engine_cfg.get("keywords_path", "")
-        # self.keywords = yaml_load_keywords(keywords_path) if keywords_path else {}
-        self.keywords = yaml_load_keywords()
+        
+        self.keywords = yaml_load_keywords(self.td_engine_cfg)
+        
+        logger.info("Keywords file loaded")
 
         keys_sorted = sorted(self.keywords.keys(), key=len, reverse=True)
 
@@ -65,14 +66,21 @@ class HeuristicEstimator:
         Returns structured heuristic estimation for a task.
         Logging includes context-aware information when possible.
         """
+        logger.debug(f"Processing estimation for {task.id} | Content: {task.content}")
 
         content = task.content or ""
         description = task.description or ""
         text_combined = f"{content} {description}".strip().lower()
 
+        logger.debug(f"Processing estimation for {task.id} | Analysing query: {text_combined}")
+
         score, matches, wc = self._text_scores(text_combined)
 
         reason = "heuristic" if score > 0 else "no_match"
+
+        logger.debug(
+            f"Estimated task: {task.id}. Output: estimated_mins: {score} | reason: {reason} | matches: {matches} | word_count: {wc}"
+        )
         return {
             "estimated_mins": score,
             "reason": reason,
@@ -80,15 +88,15 @@ class HeuristicEstimator:
             "word_count": wc,
         }
 
-    # -------------------------------------------------------------------------
-    @staticmethod
-    def estimation_totable(estimation_result: Dict[str, Any]) -> str:
-        """
-        Returns structured heuristic estimation for a task formatted as a tabulate table.
-        """
+    # # -------------------------------------------------------------------------
+    # @staticmethod
+    # def estimation_totable(estimation_result: Dict[str, Any]) -> str:
+    #     """
+    #     Returns structured heuristic estimation for a task formatted as a tabulate table.
+    #     """
 
-        # Convert to list of rows: [(key, value), ...]
-        estimation_data = [(key, value) for key, value in estimation_result.items()]
-        estimation_headers = ["Analyzed Field", "Value"]
+    #     # Convert to list of rows: [(key, value), ...]
+    #     estimation_data = [(key, value) for key, value in estimation_result.items()]
+    #     estimation_headers = ["Analyzed Field", "Value"]
 
-        return generate_datatable(estimation_data, estimation_headers)
+    #     return generate_datatable(estimation_data, estimation_headers)
