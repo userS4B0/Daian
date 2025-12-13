@@ -5,10 +5,12 @@ from core.td_engine.history_store import HistoryStore
 
 from config.log.logger import setup_logger
 
+from utils.str_utils import generate_datatable
+
 logger = setup_logger(__name__)
 
 
-class DurationEngine:
+class TaskDurationEngine:
     """
     Hybrid duration engine:
       1) baseline rules (priority, simple length rules)
@@ -21,6 +23,7 @@ class DurationEngine:
 
     def __init__(self, config: Dict[str, Any] = None):
         self.td_engine_cfg = config.get("td_engine", {})  # Instanciate specific config
+ 
         self.heuristic = HeuristicEstimator(config)
         self.history = HistoryStore(self.td_engine_cfg.get("history_path", ""))
 
@@ -67,8 +70,8 @@ class DurationEngine:
               'reason': str
             }
         """
-        baseline = self.baseline_estimate(task)
-        heur = self.heuristic.estimate(task)
+        baseline = self.baseline_estimate(task) or 0
+        heur = self.heuristic.estimate(task) or 0
         heur_mins = int(heur.get("estimated_minutes", 0))
 
         # History Key Derivation
@@ -81,12 +84,11 @@ class DurationEngine:
             history_key = " ".join(tokens[:2]) if tokens else None
 
         history_avg = None
+
         if history_key:
             history_avg = self.history.get_avg_minutes(history_key)
+            history_avg = history_avg or 0
 
-        history_avg = self.history.get_avg_minutes(history_key) if history_key else None
-
-        if history_avg:
             stat = self.history.get(history_key, {"count": 1})
             count = stat.get("count", 1)
             if count >= 5:
@@ -109,20 +111,33 @@ class DurationEngine:
             "reason": reason,
         }
 
-    def register_actual(self, task: object, actual_minutes: float):
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def estimation_totable(estimation_result: Dict[str, Any]) -> str:
         """
-        After task completion (or by aligning scheduled event with real duration),
-        register the actual minutes for the derived key.
+        Returns structured estimation for a task formatted as a tabulate table.
         """
-        # same history key derivation logic
-        heur = self.heuristic.estimate(task)
-        history_key = heur.get("matches", [])
-        if history_key:
-            history_key = history_key[0]
-        else:
-            content = task.content.strip().lower() or ""
-            tokens = content.split()
-            history_key = " ".join(tokens[:2]) if tokens else None
 
-        if history_key:
-            self.history.update(history_key, actual_minutes)
+        # Convert to list of rows: [(key, value), ...]
+        estimation_data = [(key, value) for key, value in estimation_result.items()]
+        estimation_headers = ["Analyzed Field", "Value"]
+
+        return generate_datatable(estimation_data, estimation_headers)
+
+    # def register_actual(self, task: object, actual_minutes: float):
+    #     """
+    #     After task completion (or by aligning scheduled event with real duration),
+    #     register the actual minutes for the derived key.
+    #     """
+    #     # same history key derivation logic
+    #     heur = self.heuristic.estimate(task)
+    #     history_key = heur.get("matches", [])
+    #     if history_key:
+    #         history_key = history_key[0]
+    #     else:
+    #         content = task.content.strip().lower() or ""
+    #         tokens = content.split()
+    #         history_key = " ".join(tokens[:2]) if tokens else None
+
+    #     if history_key:
+    #         self.history.update(history_key, actual_minutes)
