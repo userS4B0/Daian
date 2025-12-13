@@ -18,7 +18,9 @@ planner_app = typer.Typer(help="Planning commands")
 def show_avaliability():
     gcal_client = GCalClient(config)
 
-    planner = Planner(config)
+    todoist_client = None
+    
+    planner = Planner(todoist_client, config)
 
     thisweek_events = gcal_client.get_thisweek_events()
     free_slots = planner.get_free_slots(thisweek_events)
