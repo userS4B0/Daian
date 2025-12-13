@@ -37,18 +37,32 @@ class TaskDurationEngine:
         self.deepwork_lbl_inc = self.td_engine_cfg.get("deepwork_lbl_inc", 60)
 
     def _normalize_key(self, key: str) -> str:
-        return " ".join(key.strip().lower().split())
+        return "_".join(key.strip().lower().split())
 
     def _derive_history_key(self, task: object) -> Optional[str]:
-        heur = self.heuristic.estimate(task)
+        """
+        Derive a stable, descriptive history key.
+        Avoid single-token generic keys (e.g. 'itv').
+        """
+        content = task.content.lower().strip() if task.content else ""
+        tokens = content.split()
+
+        if not tokens:
+            return None
+
+        # Try heuristic matches ONLY if they are descriptive (>= 2 tokens)
+        heur = self.heuristic.estimate(task) or {}
         matches = heur.get("matches", [])
 
         if matches:
-            return self._normalize_key(matches[0])
+            match = matches[0].strip().lower()
+            if len(match.split()) >= 2:
+                return self._normalize_key(match)
 
-        content = task.content.strip().lower() if task.content else ""
-        tokens = content.split()
-        return self._normalize_key(" ".join(tokens[:2])) if tokens else None
+        # Fallback: first 3 tokens from content
+        key_tokens = tokens[:3]
+
+        return self._normalize_key("_".join(key_tokens))
 
     def _baseline_estimate(self, task: object) -> int:
         # Basic baseline mapping by priority (Todoist-style 1..4)
@@ -103,40 +117,59 @@ class TaskDurationEngine:
             }
         """
         baseline = self._baseline_estimate(task) or 0
+
         heur = self.heuristic.estimate(task) or 0
         heur_mins = int(heur.get("estimated_minutes", 0))
 
+        # Derive History Key
         history_key = self._derive_history_key(task)
-
         history_avg = None
+        estimated_mins = max(baseline, heur_mins)
+        reason = "baseline" if heur_mins == 0 else "heuristic+baseline"
 
         if history_key:
-            history_avg = self.history.get_avg_minutes(history_key) or 0
-            stat = self.history.get(history_key, {"count": 1})
-            count = stat.get("count", 1)
+            history_avg = self.history.get_avg_minutes(history_key)
 
-            if count >= 5:
-                estimated_mins = round(history_avg)
-                reason = f"history: {history_key}"
+            if history_avg is not None:
+                stat = self.history.get(history_key, {"count": 1})
+                count = stat.get("count", 1)
 
-            else:
-                estimated_mins = round((history_avg + max(baseline, heur_mins)) / 2)
-                reason = f"blend:history:{history_key}"
+                if count >= 5:
+                    estimated_mins = round(history_avg)
+                    reason = f"history: {history_key}"
+
+                else:
+                    estimated_mins = round((history_avg + max(baseline, heur_mins)) / 2)
+                    reason = f"blend:history:{history_key}"
 
         else:
             estimated_mins = max(baseline, heur_mins)
             reason = "baseline" if heur_mins == 0 else "heuristic+baseline"
 
         return {
+            "task_id": task.id,
+            "task_content": task.content,
             "estimated_minutes": int(estimated_mins),
             "components": {
                 "baseline": int(baseline),
                 "heuristic": int(heur_mins),
-                "history": float(history_avg) if history_avg else None,
+                "history": float(history_avg) if history_avg is not None else None,
             },
             "reason": reason,
             "history_key": history_key,
         }
+
+    def record_actual_duration(self, task: object, actual_minutes: float):
+        """
+        Register real duration for historical learning.
+        """
+        history_key = self._derive_history_key(task)
+
+        if history_key:
+            self.history.update(history_key, actual_minutes)
+            logger.info(
+                f"[Daian Learn] New entry learned: key={history_key} minutes={actual_minutes}"
+            )
 
     # -------------------------------------------------------------------------
     @staticmethod
@@ -150,12 +183,3 @@ class TaskDurationEngine:
         estimation_headers = ["Analyzed Field", "Value"]
 
         return generate_datatable(estimation_data, estimation_headers)
-
-    def record_actual_duration(self, task: object, actual_minutes: float):
-        """
-        Register real duration for historical learning.
-        """
-        history_key = self._derive_history_key(task)
-
-        if history_key:
-            self.history.update(history_key, actual_minutes)

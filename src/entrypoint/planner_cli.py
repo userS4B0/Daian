@@ -64,3 +64,17 @@ def append_nonschedule():
     planner.add_to_nonscheduled_queue(expired_tasks)
 
     print("[bold green]New tasks added to re-schedule queue![/bold green]\n")
+
+
+@planner_app.command(
+    "record-completion",
+    help="Record task completion minutes to add history to Daian so it can pull Appends overdue tasks to nonscheduled query for re-scheduling",
+)
+def record_completion(task_id: str, minutes: float):
+    todoist_client = TodoistClient(config)
+    task = todoist_client.get_task(task_id)
+
+    td_engine = TaskDurationEngine(config)
+    td_engine.record_actual_duration(task, minutes)
+
+    print("[bold green]Actual duration recorded for learning.[/bold green]")
