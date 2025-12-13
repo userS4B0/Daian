@@ -2,11 +2,11 @@
 import re
 
 from typing import Any, Dict, List, Tuple
-from tabulate import tabulate
-
-from utils.yaml_parser import yaml_load_keywords
 
 from config.log.logger import setup_logger
+
+from utils.yaml_parser import yaml_load_keywords
+from utils.str_utils import generate_datatable
 
 
 logger = setup_logger(__name__)
@@ -88,7 +88,7 @@ class HeuristicEstimator:
         """
 
         # Convert to list of rows: [(key, value), ...]
-        rows = [(k, v) for k, v in estimation_result.items()]
-        headers = ["Analyzed Field", "Value"]
+        estimation_data = [(key, value) for key, value in estimation_result.items()]
+        estimation_headers = ["Analyzed Field", "Value"]
 
-        return tabulate(rows, headers=headers, tablefmt="rounded_outline")
+        return generate_datatable(estimation_data, estimation_headers)
