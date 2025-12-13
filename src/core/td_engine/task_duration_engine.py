@@ -23,7 +23,7 @@ class TaskDurationEngine:
 
     def __init__(self, config: Dict[str, Any] = None):
         self.td_engine_cfg = config.get("td_engine", {})  # Instanciate specific config
- 
+
         self.heuristic = HeuristicEstimator(config)
         self.history = HistoryStore(self.td_engine_cfg.get("history_path", ""))
 
@@ -36,7 +36,7 @@ class TaskDurationEngine:
         self.quick_lbl_inc = self.td_engine_cfg.get("quick_lbl_inc", 15)
         self.deepwork_lbl_inc = self.td_engine_cfg.get("deepwork_lbl_inc", 60)
 
-    def baseline_estimate(self, task: object) -> int:
+    def _baseline_estimate(self, task: object) -> int:
         # Basic baseline mapping by priority (Todoist-style 1..4)
         # Assumes high number means more important
 
@@ -46,16 +46,27 @@ class TaskDurationEngine:
         task_content = task.content.lower().split() or ""
 
         if len(task_content) > self.task_lenght_heur:
+            logger.info(
+                f"Baseline estimator got a match on {task.id} | reason: task_lenght"
+            )
             base += self.task_lenght_inc
 
         # Label based Heuristic
         task_labels = task.labels or []
 
         # Implement this in todoist client & add methods to get this config parameters
-        if "quick" in task_labels:
+        if "Quick" in task_labels:
+            logger.info(
+                f"Baseline estimator got a match on {task.id}| reason: quick_lbl"
+            )
             base = min(base, self.quick_lbl_inc)
-        if "deepwork" in task_labels:
+        if "DeepWork" in task_labels:
+            logger.info(
+                f"Baseline estimator got a match on {task.id} | reason: `deepwork_lbl`"
+            )
             base = max(base, self.deepwork_lbl_inc)
+
+        return base
 
     def estimate(self, task: object) -> Dict[str, Any]:
         """
@@ -70,7 +81,7 @@ class TaskDurationEngine:
               'reason': str
             }
         """
-        baseline = self.baseline_estimate(task) or 0
+        baseline = self._baseline_estimate(task) or 0
         heur = self.heuristic.estimate(task) or 0
         heur_mins = int(heur.get("estimated_minutes", 0))
 
