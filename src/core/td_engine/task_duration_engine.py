@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from core.td_engine.heuristic_estimator import HeuristicEstimator
 from core.td_engine.history_store import HistoryStore
@@ -36,13 +36,30 @@ class TaskDurationEngine:
         self.quick_lbl_inc = self.td_engine_cfg.get("quick_lbl_inc", 15)
         self.deepwork_lbl_inc = self.td_engine_cfg.get("deepwork_lbl_inc", 60)
 
+    def _normalize_key(self, key: str) -> str:
+        return " ".join(key.strip().lower().split())
+
+    def _derive_history_key(self, task: object) -> Optional[str]:
+        heur = self.heuristic.estimate(task)
+        matches = heur.get("matches", [])
+
+        if matches:
+            return self._normalize_key(matches[0])
+
+        content = task.content.strip().lower() if task.content else ""
+        tokens = content.split()
+        return self._normalize_key(" ".join(tokens[:2])) if tokens else None
+
     def _baseline_estimate(self, task: object) -> int:
         # Basic baseline mapping by priority (Todoist-style 1..4)
         # Assumes high number means more important
 
         base = self.priority_mapper.get(f"p{task.priority}", 30)
+        logger.info(
+            f"Baseline estimator got a match on {task.id} | reason: task_priority initial estimation: {base} mins"
+        )
 
-        # Lenght Heuristic
+        # Task Lenght Estimation
         task_content = task.content.lower().split() or ""
 
         if len(task_content) > self.task_lenght_heur:
@@ -51,18 +68,22 @@ class TaskDurationEngine:
             )
             base += self.task_lenght_inc
 
-        # Label based Heuristic
+        # Label based Estimation
         task_labels = task.labels or []
 
-        # Implement this in todoist client & add methods to get this config parameters
+        # FIXME: Add real todoist labels parsed by yaml config on _baseline_estimate func
+        # Parse config data instead of hardcoding label names
+        # assignees: userS4B0
+        # labels: priority_low, td_engine, bug
+        # milestone: v1.0.0
         if "Quick" in task_labels:
             logger.info(
-                f"Baseline estimator got a match on {task.id}| reason: quick_lbl"
+                f"Baseline estimator got a match on {task.id} | reason: `quick_lbl` found"
             )
             base = min(base, self.quick_lbl_inc)
         if "DeepWork" in task_labels:
             logger.info(
-                f"Baseline estimator got a match on {task.id} | reason: `deepwork_lbl`"
+                f"Baseline estimator got a match on {task.id} | reason: `deepwork_lbl` found"
             )
             base = max(base, self.deepwork_lbl_inc)
 
@@ -85,29 +106,23 @@ class TaskDurationEngine:
         heur = self.heuristic.estimate(task) or 0
         heur_mins = int(heur.get("estimated_minutes", 0))
 
-        # History Key Derivation
-        history_key = heur.get("matches", [])
-        if history_key:
-            history_key = history_key[0]
-        else:
-            content = task.content.strip().lower() or ""
-            tokens = content.split()
-            history_key = " ".join(tokens[:2]) if tokens else None
+        history_key = self._derive_history_key(task)
 
         history_avg = None
 
         if history_key:
-            history_avg = self.history.get_avg_minutes(history_key)
-            history_avg = history_avg or 0
-
+            history_avg = self.history.get_avg_minutes(history_key) or 0
             stat = self.history.get(history_key, {"count": 1})
             count = stat.get("count", 1)
+
             if count >= 5:
                 estimated_mins = round(history_avg)
-                reason = f"history:{history_key}"
+                reason = f"history: {history_key}"
+
             else:
                 estimated_mins = round((history_avg + max(baseline, heur_mins)) / 2)
                 reason = f"blend:history:{history_key}"
+
         else:
             estimated_mins = max(baseline, heur_mins)
             reason = "baseline" if heur_mins == 0 else "heuristic+baseline"
@@ -120,6 +135,7 @@ class TaskDurationEngine:
                 "history": float(history_avg) if history_avg else None,
             },
             "reason": reason,
+            "history_key": history_key,
         }
 
     # -------------------------------------------------------------------------
@@ -135,20 +151,11 @@ class TaskDurationEngine:
 
         return generate_datatable(estimation_data, estimation_headers)
 
-    # def register_actual(self, task: object, actual_minutes: float):
-    #     """
-    #     After task completion (or by aligning scheduled event with real duration),
-    #     register the actual minutes for the derived key.
-    #     """
-    #     # same history key derivation logic
-    #     heur = self.heuristic.estimate(task)
-    #     history_key = heur.get("matches", [])
-    #     if history_key:
-    #         history_key = history_key[0]
-    #     else:
-    #         content = task.content.strip().lower() or ""
-    #         tokens = content.split()
-    #         history_key = " ".join(tokens[:2]) if tokens else None
+    def record_actual_duration(self, task: object, actual_minutes: float):
+        """
+        Register real duration for historical learning.
+        """
+        history_key = self._derive_history_key(task)
 
-    #     if history_key:
-    #         self.history.update(history_key, actual_minutes)
+        if history_key:
+            self.history.update(history_key, actual_minutes)
