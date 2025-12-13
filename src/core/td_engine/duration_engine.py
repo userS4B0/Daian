@@ -22,7 +22,7 @@ class DurationEngine:
     def __init__(self, config: Dict[str, Any] = None):
         self.td_engine_cfg = config.get("td_engine", {})  # Instanciate specific config
         self.heuristic = HeuristicEstimator(config)
-        self.history = HistoryStore(self.td_engine_cfg.get("history_path", {}))
+        self.history = HistoryStore(self.td_engine_cfg.get("history_path", ""))
 
         # Baseline defaults
         self.priority_mapper = self.td_engine_cfg.get(
