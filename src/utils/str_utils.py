@@ -68,26 +68,27 @@ def generate_datatable(raw_data: List[Any], raw_headers: List[str]) -> str:
     logger.debug("Table normalized. Rendering tabulate...")
 
     # Detect and remove fully empty columns
-    _EMPTY_VALUES = ("", None, "-", [], {})
+    _EMPTY_VALUES = ("", "-")
     num_columns = len(raw_headers)
-
 
     empty_columns = []
 
     for column in range(num_columns):
         if all((row[column] in _EMPTY_VALUES) for row in processed_data):
-            empty_columns.append[column]
+            empty_columns.append(column)
 
     if empty_columns:
         removed = [raw_headers[column] for column in empty_columns]
         logger.debug(f"Removing empty columns: {removed}")
-    
-    keep_columns = [column for column in range(num_columns) if column not in empty_columns]
-    
+
+    keep_columns = [
+        column for column in range(num_columns) if column not in empty_columns
+    ]
+
     if not keep_columns:
         logger.warning("All columns are empty. Returning minimal table.")
         return "<empty table>"
-    
+
     # Filter headers & rows
     filtered_headers = [raw_headers[i] for i in keep_columns]
     filtered_data = [[row[i] for i in keep_columns] for row in processed_data]
