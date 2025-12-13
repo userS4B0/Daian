@@ -159,6 +159,11 @@ class TaskDurationEngine:
             "history_key": history_key,
         }
 
+    # FEATURE: Add automatic learning workflow
+    # Implement methods to automate task history population for better estimation
+    # assignees: userS4B0
+    # labels: priority_low, td_engine, feature
+    # milestone: v1.1.0
     def record_actual_duration(self, task: object, actual_minutes: float):
         """
         Register real duration for historical learning.
