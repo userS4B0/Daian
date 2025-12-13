@@ -5,12 +5,12 @@ from datetime import datetime
 from core.td_engine.duration_engine import DurationEngine
 
 from config.log.logger import setup_logger
+from config.config_loader import ConfigLoader
 
 from utils.time_utils import get_current_week, normalize_datetime
 from utils.str_utils import generate_datatable
 
 logger = setup_logger(__name__)
-
 
 # FEATURE: Implement basic google calendar event functions
 # Implement rearranging Google Calendar Events
@@ -23,8 +23,12 @@ class Planner:
     Handles classification, updates, and synchronization across services.
     """
 
-    def __init__(self, todoist_client: object, config: Dict[str, Any] = None):
+    def __init__(self, todoist_client: object, config: Dict[str, Any] | None = None):
         logger.debug("Planner initialized")
+
+        if config is None:
+            logger.debug("No config provided to Planner, loading via ConfigLoader...")
+            config = ConfigLoader.load_and_validate()
 
         self.todoist = todoist_client
         self.duration_engine = DurationEngine(config)
