@@ -44,7 +44,7 @@ class HistoryStore:
 
     def update(self, key: str, minutes: float):
         """Update the running average for a key."""
-        stat = self.data.get(key)
+        stat = self._data.get(key)
 
         if stat:
             total = stat.get("avg", 0.0) * stat.get("count", 0)
