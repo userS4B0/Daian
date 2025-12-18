@@ -159,22 +159,16 @@ class TaskDurationEngine:
             "history_key": history_key,
         }
 
-    # FEATURE: Add automatic learning workflow
-    # Implement methods to automate task history population for better estimation
-    # assignees: userS4B0
-    # labels: priority_low, td_engine, feature
-    # milestone: v1.1.0
-    def record_actual_duration(self, task: object, actual_minutes: float):
+    def record_actual_duration(self, task: object, actual_minutes: int, source: str) -> None:
         """
         Register real duration for historical learning.
         """
         history_key = self._derive_history_key(task)
+        if not history_key:
+            logger.warning("No hisotry key derived, skipping learning")
 
-        if history_key:
-            self.history.update(history_key, actual_minutes)
-            logger.info(
-                f"[Daian Learn] New entry learned: key={history_key} minutes={actual_minutes}"
-            )
+        self.history.add_sample(history_key, actual_minutes, source)
+        logger.info(f"[Daian Learn] New entry learned: key={history_key} minutes={actual_minutes}")
 
     # -------------------------------------------------------------------------
     @staticmethod

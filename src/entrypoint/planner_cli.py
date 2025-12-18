@@ -2,7 +2,6 @@ import typer
 from rich import print
 
 from core.planner import Planner
-from core.td_engine.task_duration_engine import TaskDurationEngine
 
 from client.gcal_client import GCalClient
 from client.todoist_client import TodoistClient
@@ -30,18 +29,76 @@ def show_avaliability():
     )
 
 
-@planner_app.command("estimate", help="Estimates task completion time.")
-def estimate_task(task_id: str):
+@planner_app.command("estimate", help="Estimate task completion time.")
+def estimate_task(
+    task_id: str,
+    no_learn: bool = typer.Option(
+        False,
+        "--no-learn",
+        help="Do not record estimation result for learning.",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Run estimation without side effects (implies --no-learn).",
+    ),
+):
     todoist_client = TodoistClient(config)
+    planner = Planner(todoist_client, config)
 
     task = todoist_client.get_task(task_id)
 
-    td_engine = TaskDurationEngine(config)
-    estimation_result = td_engine.estimate(task)
+    estimation = planner.estimate_duration(
+        task,
+        learn=not (no_learn or dry_run),
+        dry_run=dry_run,
+    )
 
     print(
-        f"\n[bold green]Estimation result:[/bold green]\n{td_engine.estimation_totable(estimation_result)}"
+        f"\n[bold green]Estimation result ({task.content}):[/bold green]\n"
+        f"{planner.duration_engine.estimation_totable(estimation)}"
     )
+
+    if dry_run:
+        print("[dim]Dry-run: no learning data recorded.[/dim]")
+    elif no_learn:
+        print("[dim]Learning disabled for this estimation.[/dim]")
+
+
+@planner_app.command("estimate-nonscheduled", help="Estimate all nonscheduled tasks.")
+def estimate_nonscheduled_tasks(
+    no_learn: bool = typer.Option(
+        False,
+        "--no-learn",
+        help="Do not record estimation result for learning.",
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Run estimation without side effects (implies --no-learn).",
+    ),
+):
+    todoist_client = TodoistClient(config)
+    planner = Planner(todoist_client, config)
+
+    nonscheduled_tasks = todoist_client.get_nonscheduled_tasks()
+
+    for task in nonscheduled_tasks:
+        estimation = planner.estimate_duration(
+            task,
+            learn=not (no_learn or dry_run),
+            dry_run=dry_run,
+        )
+
+        print(
+            f"\n[bold green]Estimation result ({task.content}):[/bold green]\n"
+            f"{planner.duration_engine.estimation_totable(estimation)}"
+        )
+
+    if dry_run:
+        print("[dim]Dry-run: no learning data recorded.[/dim]")
+    elif no_learn:
+        print("[dim]Learning disabled for this estimation.[/dim]")
 
 
 @planner_app.command(
@@ -68,13 +125,13 @@ def append_nonschedule():
 
 @planner_app.command(
     "record-completion",
-    help="Record task completion minutes to add history to Daian so it can pull Appends overdue tasks to nonscheduled query for re-scheduling",
+    help="Record actual task duration so DAIAN can learn from it.",
 )
 def record_completion(task_id: str, minutes: float):
     todoist_client = TodoistClient(config)
+    planner = Planner(todoist_client, config)
+
     task = todoist_client.get_task(task_id)
+    planner.record_task_completion(task, minutes)
 
-    td_engine = TaskDurationEngine(config)
-    td_engine.record_actual_duration(task, minutes)
-
-    print("[bold green]Actual duration recorded for learning.[/bold green]")
+    print("[bold green]✔ Actual duration recorded for learning.[/bold green]")

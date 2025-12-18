@@ -12,6 +12,7 @@ from utils.str_utils import generate_datatable
 
 logger = setup_logger(__name__)
 
+
 # FEATURE: Implement basic google calendar event functions
 # Implement rearranging Google Calendar Events
 # assignees: userS4B0
@@ -162,8 +163,35 @@ class Planner:
 
         return generate_datatable(free_slot_data, free_slots_headers)
 
-    def estimate_duration(self, task):
-        return self.duration_engine.estimate(task)
+    def estimate_duration(
+        self, task: object, learn: bool = True, dry_run: bool = False
+    ):
+        estimation = self.duration_engine.estimate(task)
+
+        logger.debug(f"Task {task.id} estimated | learn={learn} | dry_run={dry_run}")
+
+        if dry_run:
+            logger.info("Dry-run active: skipping all learning.")
+            return estimation
+
+        if not learn:
+            logger.debug("Learning disabled by flag.")
+            return estimation
+
+        estimated_minutes = estimation.get("estimated_minutes")
+        reason = estimation.get("reason")
+
+        if estimated_minutes and reason:
+            self.duration_engine.record_actual_duration(task, estimated_minutes, reason)
+            logger.debug("Estimation recorded for learning.")
+
+        else:
+            logger.debug("Learning skipped for this estimation.")
+
+        return estimation
+
+    def record_task_completion(self, task: object, minutes: float) -> None:
+        self.duration_engine.record_actual_duration(task, minutes)
 
     def arrange_tasks(self, tasks: List[object]) -> None:
         # Process task list

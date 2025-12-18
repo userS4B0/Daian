@@ -3,6 +3,11 @@ import json
 from typing import Optional, Dict, Any
 from pathlib import Path
 
+from config.log.logger import setup_logger
+
+from utils import time_utils
+
+logger = setup_logger(__name__)
 
 
 class HistoryStore:
@@ -40,18 +45,52 @@ class HistoryStore:
     def get_avg_minutes(self, key: str) -> Optional[float]:
         stat = self.get(key)
 
-        return stat.get("avg") if stat else None
+        return stat.get("avg_minutes") if stat else None
 
-    def update(self, key: str, minutes: float):
-        """Update the running average for a key."""
+    def add_sample(self, key: str, minutes: float, source: str = "unknown") -> None:
+        """
+        Register a real task duration sample for learning purposes.
+        """
+
+        if not key:
+            logger.warning(
+                "Tried to add new learning sample with empty key, skipping learning"
+            )
+            return
+
+        if minutes <= 0:
+            logger.warning(
+                f"Tried to add new learning sample with non-positive minutes ({minutes}) for key={key}, skipping learning"
+            )
+            return
+
         stat = self._data.get(key)
 
-        if stat:
-            total = stat.get("avg", 0.0) * stat.get("count", 0)
-            total += minutes
-            stat["count"] += 1
-            stat["avg"] = total / stat["count"]
+        if not stat:
+            stat = {
+                "count": 0,
+                "total_minutes": 0.0,
+                "avg_minutes": 0.0,
+                "samples": [],
+            }
+            self._data[key] = stat
 
-        else:
-            self._data[key] = {"avg": float(minutes), "count": 1}
+        # Update stats
+        stat["count"] += 1
+        stat["total_minutes"] += float(minutes)
+        stat["avg_minutes"] = stat["total_minutes"] / stat["count"]
+
+        # Keep samples bounded (prevent file explosion)
+        stat.setdefault("samples", []).append(float(minutes))
+        if len(stat["samples"]) > 20:
+            stat["samples"].pop(0)
+
+        last_updated = str(time_utils.get_today())
+        stat["last_source"] = source
+        stat["last_updated"] = last_updated
+
+        logger.info(
+            f"Learning recorded: key={key}, minutes={minutes}, avg={stat['avg_minutes']:.1f}"
+        )
+
         self._save()
